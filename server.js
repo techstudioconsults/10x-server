@@ -17,6 +17,8 @@ const app = express();
 
 // Route files
 const auth = require('./routes/auth');
+const resources = require('./routes/resources');
+
 
 //Body parser
 app.use(express.json());
@@ -33,6 +35,8 @@ app.use(errorHandler);
 
 // Mount routers
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/resources', resources);
+
 
 
 const PORT = process.env.PORT || 5000;

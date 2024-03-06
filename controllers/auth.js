@@ -7,7 +7,7 @@ const sendEmail = require('../utils/sendEmail');
 // @route   POST /api/v1/auth/register
 // @access  Public
 exports.register = asyncHandler(async(req, res, next) => {
-    const { name, email, password} = req.body ;
+    const { name, email, password } = req.body ;
 
      // create user
     const user = await User.create({name, email, password});
@@ -44,8 +44,9 @@ exports.login = asyncHandler(async(req, res, next) => {
     sendTokenResponse(user, 200, res);
 });
 
+
 //@desc     Get current logged in user
-// @route   POST /api/v1/auth/me
+// @route   GET /api/v1/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async(req, res, next) => {
   const user = await User.findById(req.user.id);
@@ -55,6 +56,7 @@ if(!user){
 }
   res.status(200).json({ success: true, data: user });
 });
+
 
 //@desc     Update user details
 // @route   PUT /api/v1/auth/updatedetails
@@ -74,7 +76,7 @@ exports.updateDetails = asyncHandler(async(req, res, next) => {
 });
 
 //@desc     update password
-// @route   POST /api/v1/auth/updatepassword
+// @route   PUT /api/v1/auth/updatepassword
 // @access  Private
 exports.updatePassword = asyncHandler(async(req, res, next) => {
   const user = await User.findById(req.user.id).select('+password');
@@ -159,19 +161,6 @@ if(!user){
  await user.save();
  
   sendTokenResponse(user, 200, res);
-});
-
-
-//@desc     Get current logged in user
-// @route   POST /api/v1/auth/me
-// @access  Private
-exports.getMe = asyncHandler(async(req, res, next) => {
-  const user = await User.findById(req.user.id);
-
-if(!user){
-  return next(new ErrorResponse('User not found', 404));
-}
-  res.status(200).json({ success: true, data: user });
 });
 
 
