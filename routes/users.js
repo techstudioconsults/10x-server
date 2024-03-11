@@ -3,7 +3,7 @@ const {
    getUsers,
    getUser,
    deleteUser
- } = require('../controllers/users');
+ } = require('../controllers/user');
  const User = require('../models/User');
  const advancedResult = require('../middleware/advancedResult');
  const { protect, authorize } = require('../middleware/auth');

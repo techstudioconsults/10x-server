@@ -1,13 +1,14 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Resource = require('../models/Resources');
+const uploadImage = require('../utils/uploadImage');
 
 
 
 //@desc     Get all resources
 // @route   GET /api/v1/resources
 // @access  Public
-exports.getResources = asyncHandler(async(req, res, next) => {
+const getResources = asyncHandler(async(req, res, next) => {
     res.status(200).json(res.advancedResults);
  });
 
@@ -16,7 +17,7 @@ exports.getResources = asyncHandler(async(req, res, next) => {
 //@desc     Get single resource
 // @route   GET /api/v1/resource/:id
 // @access  Public
-exports.getResource = asyncHandler(async(req, res, next) => {
+const getResource = asyncHandler(async(req, res, next) => {
     const resource = await Resource.findById(req.params.id);
 
     if(!resource){
@@ -30,14 +31,20 @@ exports.getResource = asyncHandler(async(req, res, next) => {
   //@desc   Create Resource
 // @route   POST /api/v1/resource
 // @access  Private/Admin
-exports.createResource = asyncHandler(async(req, res, next) => {
+const createResource = asyncHandler(async(req, res, next) => {
  
       // Make sure user is an admin
       if(req.user.role !== 'admin'){
         return next(new ErrorResponse(`User ${req.user.id} is not authorized to add resources`, 401));
     }
 
+    console.log(req.files);
+
+    const photoUrl = await uploadImage(req.files.photo.tempFilePath);
+      req.body.photo = photoUrl;
+     
     const resource = await Resource.create(req.body);
+
  
     res.status(201).json({ success: true, data: resource });
  });
@@ -46,7 +53,7 @@ exports.createResource = asyncHandler(async(req, res, next) => {
   //@desc   Update Resource
 // @route   PUT /api/v1/resources/:id
 // @access  Private/Admin
-exports.updateResource = asyncHandler(async(req, res, next) => {
+const updateResource = asyncHandler(async(req, res, next) => {
   
     let resource = await Resource.findById(req.params.id);
 
@@ -72,7 +79,7 @@ exports.updateResource = asyncHandler(async(req, res, next) => {
   //@desc   Delete resource
 // @route   DELETE /api/v1/resources/:id
 // @access  Private/Admin
-exports.deleteResource = asyncHandler(async(req, res, next) => {
+const deleteResource = asyncHandler(async(req, res, next) => {
     const resource = await Resource.findById(req.params.id)
  
     
@@ -89,3 +96,6 @@ exports.deleteResource = asyncHandler(async(req, res, next) => {
  
     res.status(200).json({ success: true, data: {}});
  });
+
+
+ module.exports = { getResources, getResource, createResource, updateResource, deleteResource };

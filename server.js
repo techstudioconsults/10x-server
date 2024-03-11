@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const morgan = require('morgan');
 const colors = require('colors');
 const cookieParser = require('cookie-parser');
+const fileUpload = require('express-fileupload');
 
 
 // Load env vars
@@ -17,11 +18,18 @@ const app = express();
 
 // Route files
 const auth = require('./routes/auth');
+const users = require('./routes/users');
 const resources = require('./routes/resources');
 
 
 //Body parser
 app.use(express.json());
+
+// file upload 
+app.use(fileUpload({
+    useTempFiles : true,
+    tempFileDir : '/tmp/'
+}));
 
 //Cookie parser
 app.use(cookieParser());
@@ -35,6 +43,7 @@ app.use(errorHandler);
 
 // Mount routers
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/users', users);
 app.use('/api/v1/resources', resources);
 
 

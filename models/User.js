@@ -20,8 +20,8 @@ const UserSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
-        default: 'user'
+        enum: ["user", "admin"],
+        default: "user"
     },
     password:{
         type: String,
@@ -31,11 +31,12 @@ const UserSchema = mongoose.Schema({
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+    
+}, 
+  {
+    timestamps: true
+  } 
+);
 
 
   // Encrypt password using bcrypt
