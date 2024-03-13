@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const colors = require('colors');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
+const cors = require('cors');
 
 
 // Load env vars
@@ -24,6 +25,9 @@ const resources = require('./routes/resources');
 
 //Body parser
 app.use(express.json());
+
+//cors setup
+app.use(cors());
 
 // file upload 
 app.use(fileUpload({
