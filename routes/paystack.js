@@ -5,7 +5,7 @@ const router = express.Router();
 
 router
      .post('/', initializePayment.acceptPayment)
-     .post('/', webhook);
+     .post('/webhook', webhook);
 
 
 module.exports = router;
