@@ -21,6 +21,7 @@ const app = express();
 const auth = require('./routes/auth');
 const users = require('./routes/users');
 const resources = require('./routes/resources');
+const paystack = require('./routes/paystack');
 
 
 //Body parser
@@ -49,6 +50,8 @@ app.use(errorHandler);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/users', users);
 app.use('/api/v1/resources', resources);
+app.use('/api/v1/paystack', paystack);
+
 
 
 
