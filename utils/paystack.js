@@ -53,7 +53,7 @@ const payStack = {
 
 
 const webhook = function(req, res) {
-  
+
   //validate event
   const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
 
@@ -64,7 +64,7 @@ const webhook = function(req, res) {
 
     // Do something with event
     if (event && event.event === 'transfer.success') {
-      return res.status(200).json({ message: 'Transfer successful' })
+      return res.status(200).json({ message: 'Transfer successful', event })
     }  
   } 
   
