@@ -64,11 +64,13 @@ const webhook = function(req, res) {
 
     // Do something with event
     if (event && event.event === 'transfer.success') {
-      return res.status(200).json({ message: 'Transfer successful', event })
+      res.status(200).json({event, data: event.data});
     }  
+    if (event && event.event === 'transfer.failed') {
+      res.status(500).json({event, data: event.data});
+    } 
   } 
   
-  res.send(200);
 };
 
 
