@@ -1,10 +1,11 @@
 const express = require('express');
-const { initializePayment, webhook } = require('../utils/paystack');
+const { initializePayment, webhook, verifyPayment } = require('../utils/paystack');
 const router = express.Router();
 
 
 router
-     .post('/', initializePayment.acceptPayment)
+     .post('/', initializePayment)
+     .get('/:reference', verifyPayment)
      .post('/webhook', webhook);
 
 
