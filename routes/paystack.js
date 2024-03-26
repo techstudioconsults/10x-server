@@ -7,7 +7,7 @@ const router = express.Router();
 router
      .post('/', initializePayment)
      .get('/:reference', verifyPayment)
-     .post('/webhook', whitelistIP, webhook);
+     .post('/webhook', webhook);
 
 
 module.exports = router;

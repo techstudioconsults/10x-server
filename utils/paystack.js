@@ -54,14 +54,14 @@ const initializePayment = (req, res) => {
 
 
 
-const verifyPayment = async (req, res) => {
+const verifyPayment = async (req, res, ref) => {
     try {
-        const { reference } = req.params; // Assuming reference is a URL parameter
+         ref = req.params; // Assuming reference is a URL parameter
 
         const verifyOptions = {
             hostname: 'api.paystack.co',
             port: 443,
-            path: `/transaction/verify/${reference}`, // Use backticks for dynamic paths
+            path: `/transaction/verify/${ref}`, // Use backticks for dynamic paths
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
@@ -97,6 +97,7 @@ const webhook = function(req, res) {
   if (hash == req.headers['x-paystack-signature']) {
     // Retrieve the request's body
     const event = req.body;
+    console.log(event);
    
   } 
 
