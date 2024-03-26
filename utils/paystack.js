@@ -21,6 +21,7 @@ const initializePayment = (req, res) => {
             port: 443,
             path: '/transaction/initialize',
             method: 'POST',
+            callback: webhook,
             headers: {
                 Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
                 'Content-Type': 'application/json'
@@ -90,35 +91,16 @@ const verifyPayment = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 const webhook = function(req, res) {
  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
 
   if (hash == req.headers['x-paystack-signature']) {
     // Retrieve the request's body
     const event = req.body;
-    console.log(event)
-    // Do something with event
-    if (event && event.event === 'charge.success') {
-      return res.status(200).json({ message: 'Transfer successful', event })
-    }  
-    console.log(event)
-    if (event && event.event === 'transfer.failed') {
-      return res.status(200).json({message: 'Transfer failed', data })
-    } 
+   
   } 
+
+  res.send(200);
   
 };
 
