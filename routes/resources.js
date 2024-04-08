@@ -6,6 +6,13 @@ const advancedResult = require('../middleware/advancedResult');
 const router = express.Router();
 
 
+// Include other resource routers
+ const reviewRouter = require('./review');
+
+ // Re-route into other routers
+router.use('/:resourceId/reviews', reviewRouter);
+
+
 router
    .route('/')
    .get(advancedResult(Resource),  getResources)
