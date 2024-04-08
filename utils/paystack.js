@@ -21,7 +21,6 @@ const initializePayment = (req, res) => {
             port: 443,
             path: '/transaction/initialize',
             method: 'POST',
-            callback: webhook,
             headers: {
                 Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
                 'Content-Type': 'application/json'
