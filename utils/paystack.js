@@ -34,7 +34,7 @@ const initializePayment = (req, res) => {
             });
             apiRes.on('end', () => {
                 const responseData = JSON.parse(data);
-                res.status(200).json(responseData);
+                res.status(200).json( {authorization_url : responseData.data.authorization_url});
             });
         });
 
@@ -98,9 +98,13 @@ const webhook = function(req, res) {
     const event = req.body;
     console.log(event);
    
+    if(event == 'charge.success'){
+        return res.status(200).json({ success: true, data: event.data});
+    }
+
   } 
 
-  res.send(200);
+  //res.send(200);
   
 };
 

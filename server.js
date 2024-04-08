@@ -9,6 +9,7 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 
 
+
 // Load env vars
 dotenv.config({ path: './config/config.env' });
 
@@ -22,6 +23,7 @@ const auth = require('./routes/auth');
 const users = require('./routes/users');
 const resources = require('./routes/resources');
 const paystack = require('./routes/paystack');
+const reviews = require('./routes/review');
 
 
 //Body parser
@@ -51,6 +53,7 @@ app.use('/api/v1/auth', auth);
 app.use('/api/v1/users', users);
 app.use('/api/v1/resources', resources);
 app.use('/api/v1/paystack', paystack);
+app.use('/api/v1/reviews', reviews);
 
 
 
