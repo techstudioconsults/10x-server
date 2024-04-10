@@ -26,16 +26,16 @@ const initializePayment = (req, res) => {
       },
     };
 
-    const clientReq = https.request(options, (apiRes) => {
-      let data = "";
-      apiRes.on("data", (chunk) => {
-        data += chunk;
-      });
-      apiRes.on("end", () => {
-        const responseData = JSON.parse(data);
-        res.status(200).json(responseData);
-      });
-    });
+        const clientReq = https.request(options, apiRes => {
+            let data = '';
+            apiRes.on('data', chunk => {
+                data += chunk;
+            });
+            apiRes.on('end', () => {
+                const responseData = JSON.parse(data);
+                res.status(200).json( {authorization_url : responseData.data.authorization_url});
+            });
+        });
 
     clientReq.on("error", (error) => {
       console.error("Paystack API request error:", error);
@@ -101,9 +101,15 @@ const webhook = function (req, res) {
     // Retrieve the request's body
     const event = req.body;
     console.log(event);
-  }
+   
+    if(event == 'charge.success'){
+        return res.status(200).json({ success: true, data: event.data});
+    }
 
-  res.send(200);
+  } 
+
+  //res.send(200);
+  
 };
 
 module.exports = { initializePayment, webhook, verifyPayment };
