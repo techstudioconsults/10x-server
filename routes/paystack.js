@@ -1,5 +1,6 @@
 const express = require('express');
-const { initializePayment, webhook, verifyPayment } = require('../utils/paystack');
+const { initializePayment,verifyPayment } = require('../utils/paystack');
+const webhook = require('../utils/helper');
 const whitelistIP = require('../middleware/whitelist');
 const router = express.Router();
 
