@@ -4,7 +4,7 @@ const bcrypt =  require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const UserSchema = mongoose.Schema({
-    name: {
+    fullname: {
         type: String,
         required: [true, "Please add a name"],
         maxlength: [50, 'Name cannot be more than 50 characters']
