@@ -1,28 +1,25 @@
 const verifyWebhookEvent = require('./verifyPayment');
 
-const webhook = async function(req, res) {
+const webhook = async (req, res) => {
+    const event = req.body;
+  
     try {
-        // Verify the Paystack signature
-        const verifiedEvent = verifyWebhvookEvent(req);
-
-        if (verifiedEvent.data.status === 'success') {
-            // Payment transaction was successful
-            // Proceed with further processing or handling of the webhook event
-            console.log('Payment transaction was successful:', verifiedEvent.data);
-
-            // Your code to handle successful payment transaction
-            // ...
-        } else {
-            // Payment transaction was not successful
-            console.log('Payment transaction was not successful:', verifiedEvent.data);
-        }
-
-        // Respond to Paystack with a success message
+      // Verify the webhook event
+      const verifiedEvent = await verifyWebhookEvent(event);
+  
+      if (verifiedEvent.data.status === 'success') {
+        // Handle successful payment event
+        // ...
+  
         res.status(200).send('Webhook event processed successfully');
+      } else {
+        res.status(200).send('Webhook event processed');
+      }
     } catch (error) {
-        console.error('Error processing webhook event:', error);
-        res.status(500).send('An error occurred during webhook processing');
+      console.error('Error processing webhook event:', error);
+      res.status(500).send('An error occurred during webhook processing');
     }
-};
+  };
 
-module.exports = webhook;
+
+  module.exports = webhook;

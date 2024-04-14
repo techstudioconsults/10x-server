@@ -1,17 +1,14 @@
 const crypto = require('crypto');
 
+const verifyWebhookEvent = (event) => {
+  const paystack_secret_key = process.env.PAYSTACK_SECRET_KEY;
+  const hash = crypto.createHmac('sha512', paystack_secret_key).update(JSON.stringify(event)).digest('hex');
 
-const verifyPayment = function(req, res) {
-    const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
-   
-     if (hash == req.headers['x-paystack-signature']) {
-       // Retrieve the request's body
-       const event = req.body;
-       console.log(event);
-    
-     } 
-     
-   };
-   
+  if (hash === event.data.sig) {
+    return event;
+  } else {
+    throw new Error('Invalid webhook event signature');
+  }
+};
 
-module.exports = verifyPayment;
+module.exports = { verifyWebhookEvent };
