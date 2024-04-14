@@ -10,11 +10,31 @@ const { initializePayment, webhook } = require('../utils/paystack');
 // @route   POST /api/v1/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res, next) => {
-      const { name, email, password, amount } = req.body;
+  const { fullname, email, password, courseId, amount } = req.body;
 
-    const user = await User.create({name, email, password});
-    
-    sendTokenResponse(user, 200, res);
+  console.log(req.body);
+
+  // Check if required properties are present in the request body
+  if (!email || !amount) {
+    return res.status(400).json({ error: 'Email and amount are required' });
+  }
+
+  try {
+    // Check if the user is already registered
+    let user = await User.findOne({ email });
+
+       // Initialize the payment process
+       await initializePayment(req, res);
+
+       // Store the user and course information in the session or a database
+       req.session.userInfo = { fullname, email, password, courseId };
+
+       console.log(req.session.userInfo);
+
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ error: 'An error occurred during payment' });
+  }
 });
 
 
