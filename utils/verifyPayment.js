@@ -11,4 +11,4 @@ const verifyWebhookEvent = (event) => {
   }
 };
 
-module.exports = { verifyWebhookEvent };
+module.exports = verifyWebhookEvent ;
