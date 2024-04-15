@@ -92,11 +92,6 @@ const verifyPayment = async (req, res, ref) => {
   }
 };
 
-const webhook = function (req, res) {
-  const hash = crypto
-    .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY)
-    .update(JSON.stringify(req.body))
-    .digest("hex");
 
 // const webhook = function(req, res) {
 //  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
@@ -111,6 +106,7 @@ const webhook = function (req, res) {
   
 // };
 
-module.exports = { initializePayment, webhook, verifyPayment };
+
+
 
 module.exports = {initializePayment,  verifyPayment};
