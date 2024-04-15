@@ -7,13 +7,17 @@ const initializePayment = (req, res) => {
     try {
       const { email, amount, fullname, password, courseId } = req.body;
 
-
+      const metadata = {
+        fullname,
+        courseId,
+        password,
+      };
   
       if (!email || !amount) {
         return res.status(400).json({ error: 'Email and amount are required' });
       }
   
-      const params = JSON.stringify({ email, amount: amount * 100 });
+      const params = JSON.stringify({ email, amount: amount * 100, metadata});
       const options = {
         hostname: 'api.paystack.co',
         port: 443,
