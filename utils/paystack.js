@@ -7,6 +7,7 @@ const initializePayment = (req, res) => {
     try {
       const { email, amount, fullname, password, courseId } = req.body;
 
+      
       const metadata = {
         fullname,
         courseId,

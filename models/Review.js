@@ -3,13 +3,11 @@ const mongoose = require('mongoose');
 const ReviewSchema = new mongoose.Schema({
     text: {
         type: String,
-        required: [true, 'Please add some text']
     },
     rating: {
        type: Number,
        min: 1,
        max: 5,
-       required: [true, 'Please add a rating between 1 and 5']
     },
     resource: {
         type: mongoose.Schema.ObjectId,

@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const UserSchema = mongoose.Schema({
     fullname: {
         type: String,
-        required: [true, "Please add a name"],
+        required: [true, "Please add a fullname"],
         maxlength: [50, 'Name cannot be more than 50 characters']
     },
     email: {
@@ -23,6 +23,11 @@ const UserSchema = mongoose.Schema({
         enum: ["user", "admin"],
         default: "user"
     },
+    photo: {
+      type: String,
+      required: [false, "add an image"],
+      default: 'no-photo.jpg'
+  },
     password:{
         type: String,
         required: [true, 'Please add a password'],
