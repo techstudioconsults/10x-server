@@ -5,7 +5,9 @@ const crypto = require('crypto');
 
 const initializePayment = (req, res) => {
     try {
-      const { email, amount } = req.body;
+      const { email, amount, fullname, password, courseId } = req.body;
+
+
   
       if (!email || !amount) {
         return res.status(400).json({ error: 'Email and amount are required' });
@@ -17,6 +19,10 @@ const initializePayment = (req, res) => {
         port: 443,
         path: '/transaction/initialize',
         method: 'POST',
+        ref: '',
+        metadata: {
+           fullname, courseId, password
+        },
         headers: {
           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
           'Content-Type': 'application/json',
@@ -36,6 +42,7 @@ const initializePayment = (req, res) => {
   
           if (apiRes.statusCode === 200) {
             res.status(200).json({ authorization_url: responseData.data.authorization_url });
+            console.log(responseData);
           } else {
             res.status(apiRes.statusCode).json({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
           }
