@@ -8,6 +8,8 @@ const verifyWebhookEvent = async (req, res) => {
 
     if(event && event.event === 'transfer.success'){
 
+      console.log(event);
+
       return res.status(200).json({ message: 'Transfer successful' });
     }
 

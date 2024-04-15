@@ -4,6 +4,7 @@ const webhook = async (req, res) => {
   try {
     // Verify the webhook event
     const verifiedEvent = await verifyWebhookEvent(req, res);
+    console.log(verifiedEvent);
 
     if (verifiedEvent) {
       if (verifiedEvent.event === 'charge.success') {
