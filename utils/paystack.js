@@ -3,72 +3,71 @@ const https = require("https");
 const crypto = require("crypto");
 
 const initializePayment = (req, res) => {
-  try {
-    const { email, amount } = req.body;
-
-    if (!email || !amount) {
-      return res.status(400).json({ error: "Email and amount are required" });
+    try {
+      const { email, amount } = req.body;
+  
+      if (!email || !amount) {
+        return res.status(400).json({ error: 'Email and amount are required' });
+      }
+  
+      const params = JSON.stringify({ email, amount: amount * 100 });
+      const options = {
+        hostname: 'api.paystack.co',
+        port: 443,
+        path: '/transaction/initialize',
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+          'Content-Length': params.length,
+        },
+      };
+  
+      const clientReq = https.request(options, (apiRes) => {
+        let data = '';
+  
+        apiRes.on('data', (chunk) => {
+          data += chunk;
+        });
+  
+        apiRes.on('end', () => {
+          const responseData = JSON.parse(data);
+  
+          if (apiRes.statusCode === 200) {
+            res.status(200).json({ authorization_url: responseData.data.authorization_url });
+          } else {
+            res.status(apiRes.statusCode).json({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
+          }
+        });
+      });
+  
+      clientReq.on('error', (error) => {
+        console.error('Paystack API request error:', error);
+        res.status(500).json({ error: 'An error occurred while contacting payment gateway' });
+      });
+  
+      clientReq.write(params);
+      clientReq.end();
+    } catch (error) {
+      console.error('Initialization error:', error);
+      res.status(500).json({ error: 'An error occurred during payment initialization' });
     }
+  };
 
-    const params = JSON.stringify({
-      email,
-      amount: amount * 100, // Convert amount to kobo
-    });
-
-    const options = {
-      hostname: "api.paystack.co",
-      port: 443,
-      path: "/transaction/initialize",
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-    };
-
-    const clientReq = https.request(options, (apiRes) => {
-      let data = "";
-      apiRes.on("data", (chunk) => {
-        data += chunk;
-      });
-      apiRes.on("end", () => {
-        const responseData = JSON.parse(data);
-        res
-          .status(200)
-          .json({ authorization_url: responseData.data.authorization_url });
-      });
-    });
-
-    clientReq.on("error", (error) => {
-      console.error("Paystack API request error:", error);
-      res
-        .status(500)
-        .json({ error: "An error occurred while contacting payment gateway" });
-    });
-
-    clientReq.write(params);
-    clientReq.end();
-  } catch (error) {
-    console.error("Initialization error:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred during payment initialization" });
-  }
-};
 
 const verifyPayment = async (req, res, ref) => {
   try {
     ref = req.params; // Assuming reference is a URL parameter
 
-    const verifyOptions = {
-      hostname: "api.paystack.co",
-      port: 443,
-      path: `/transaction/verify/${ref}`, // Use backticks for dynamic paths
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      },
-    };
+        const verifyOptions = {
+            hostname: 'api.paystack.co',
+            port: 443,
+            path: `/transaction/verify/${ref}`, 
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+            }
+        };
 
     const clientReq = https
       .request(verifyOptions, (apiRes) => {
@@ -93,48 +92,21 @@ const verifyPayment = async (req, res, ref) => {
   }
 };
 
-const webhook = function (req, res) {
-  const hash = crypto
-    .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY)
-    .update(JSON.stringify(req.body))
-    .digest("hex");
 
-  if (hash === req.headers["x-paystack-signature"]) {
-    // Retrieve the request's body
-    const event = req.body;
+// const webhook = function(req, res) {
+//  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
 
-    // Handle different event types
-    switch (event.event) {
-      case "charge.success":
-        // Handle successful payment
-        console.log("Payment successful:", event.data);
-        return res.status(200).json({ success: true, data: event.data });
+//   if (hash == req.headers['x-paystack-signature']) {
+//     // Retrieve the request's body
+//     const event = req.body;
+//     console.log(event);
 
-      case "transfer.success":
-        // Handle successful transfer
-        console.log("Transfer successful:", event.data);
-        return res.status(200).json({ success: true, data: event.data });
 
-      case "transfer.failed":
-        // Handle failed transfer
-        console.log("Transfer failed:", event.data);
-        return res.status(200).json({ success: false, data: event.data });
+//   } 
+  
+// };
 
-      // Add more cases for other event types you need to handle
 
-      default:
-        console.log("Unhandled event:", event.event);
-        return res
-          .status(200)
-          .json({ success: false, message: "Unhandled event" });
-    }
-  } else {
-    // Invalid webhook signature
-    console.error("Invalid webhook signature");
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid webhook signature" });
-  }
-};
 
-module.exports = { initializePayment, webhook, verifyPayment };
+
+module.exports = {initializePayment,  verifyPayment};
