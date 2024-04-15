@@ -7,7 +7,7 @@ const webhook = async (req, res) => {
     console.log(verifiedEvent);
 
     if (verifiedEvent) {
-      if (verifiedEvent.event === 'charge.success') {
+      if (verifiedEvent.data && verifiedEvent.data.event === 'charge.success') {
         const fullname = verifiedEvent.authorization.metadata.fullname;
         const courseId = verifiedEvent.authorization.metadata.courseId;
         const password = verifiedEvent.authorization.metadata.password;
