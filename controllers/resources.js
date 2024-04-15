@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Resource = require('../models/Resources');
 const uploadImage = require('../utils/uploadImage');
+const uploadVideo = require('../utils/uploadVideo')
 
 
 
@@ -40,11 +41,19 @@ const createResource = asyncHandler(async(req, res, next) => {
 
     console.log(req.files);
 
+    // upload image 
     const photoUrl = await uploadImage(req.files.photo.tempFilePath);
       req.body.photo = photoUrl;
-     
-    const resource = await Resource.create(req.body);
 
+    // Upload the video to Vimeo
+    const videoUri = await uploadVideo(req.files.video.tempFilePath, {
+         name: 'Untitled', // Customize the name as needed
+         description: 'The description goes here.' // Customize the description as needed
+  });
+
+  req.body.video = videoUri;
+     
+  const resource = await Resource.create({...req.body});
  
     res.status(201).json({ success: true, data: resource });
  });

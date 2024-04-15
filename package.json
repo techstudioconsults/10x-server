@@ -10,6 +10,7 @@
   "author": "Babajide Odesanya",
   "license": "ISC",
   "dependencies": {
+    "@vimeo/vimeo": "^3.0.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.0.3",
     "colors": "^1.4.0",
@@ -18,10 +19,12 @@
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.3",
+    "express-session": "^1.18.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.1.3",
     "morgan": "^1.10.0",
-    "nodemailer": "^6.9.11"
+    "nodemailer": "^6.9.11",
+    "vimeo": "^2.3.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
