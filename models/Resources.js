@@ -8,7 +8,7 @@ const ResourceSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        required: [true, 'Please add a tuition cost']
+        required: [true, 'Pleasea add a tuition cost']
     },
     category: {
         type: String,

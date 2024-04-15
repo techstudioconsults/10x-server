@@ -4,11 +4,9 @@ const webhook = require('../utils/helper');
 const whitelistIP = require('../middleware/whitelist');
 const router = express.Router();
 
-
 router
-     .post('/', initializePayment)
-     .get('/:reference', verifyPayment)
-     .post('/webhook', webhook);
-
+  .post("/", initializePayment)
+  .get("/:reference", verifyPayment)
+  .post("/webhook", webhook);
 
 module.exports = router;

@@ -1,7 +1,6 @@
-require('dotenv').config();
-const https = require('https');
-const crypto = require('crypto');
-
+require("dotenv").config();
+const https = require("https");
+const crypto = require("crypto");
 
 const initializePayment = (req, res) => {
     try {
@@ -57,8 +56,8 @@ const initializePayment = (req, res) => {
 
 
 const verifyPayment = async (req, res, ref) => {
-    try {
-         ref = req.params; // Assuming reference is a URL parameter
+  try {
+    ref = req.params; // Assuming reference is a URL parameter
 
         const verifyOptions = {
             hostname: 'api.paystack.co',
@@ -70,28 +69,34 @@ const verifyPayment = async (req, res, ref) => {
             }
         };
 
-        const clientReq = https.request(verifyOptions, apiRes => {
-            let data = '';
-            apiRes.on('data', (chunk) => {
-                data += chunk;
-                
-            });
-            apiRes.on('end', () => {
-                console.log(JSON.parse(data));
-                res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
-            });
-        }).on('error', error => {
-            console.error(error);
-            res.status(500).json({ error: 'An error occurred' });
+    const clientReq = https
+      .request(verifyOptions, (apiRes) => {
+        let data = "";
+        apiRes.on("data", (chunk) => {
+          data += chunk;
         });
-
-        clientReq.end(); // No need to write any data for a GET request
-    } catch (error) {
+        apiRes.on("end", () => {
+          console.log(JSON.parse(data));
+          res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
+        });
+      })
+      .on("error", (error) => {
         console.error(error);
-        res.status(500).json({ error: 'An error occurred' });
-    }
+        res.status(500).json({ error: "An error occurred" });
+      });
+
+    clientReq.end(); // No need to write any data for a GET request
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
 };
 
+const webhook = function (req, res) {
+  const hash = crypto
+    .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY)
+    .update(JSON.stringify(req.body))
+    .digest("hex");
 
 // const webhook = function(req, res) {
 //  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
@@ -106,7 +111,6 @@ const verifyPayment = async (req, res, ref) => {
   
 // };
 
-
-
+module.exports = { initializePayment, webhook, verifyPayment };
 
 module.exports = {initializePayment,  verifyPayment};
