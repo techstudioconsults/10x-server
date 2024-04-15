@@ -8,8 +8,13 @@ const webhook = async (req, res) => {
 
     if (verifiedEvent) {
       if (verifiedEvent.event === 'charge.success') {
-        // Handle successful payment event
-        // ...
+        const fullname = verifiedEvent.authorization.metadata.fullname;
+        const courseId = verifiedEvent.authorization.metadata.courseId;
+        const password = verifiedEvent.authorization.metadata.password;
+        
+        console.log('Fullname:', fullname);
+        console.log('Course ID:', courseId);
+        console.log('Password:', password);
         res.status(200).send('Webhook event processed successfully');
       } else {
         // Handle other event types as needed
