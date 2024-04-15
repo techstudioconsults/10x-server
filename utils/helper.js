@@ -9,7 +9,7 @@ const webhook = async (req, res) => {
 
     if (verifiedEvent) {
         if (verifiedEvent.data && verifiedEvent.data.event === 'charge.success') {
-          const metadata = verifiedEvent.data.data.metadata;
+          const metadata = verifiedEvent.data.authorization.metadata;
         
           if (typeof metadata === 'object' && metadata !== null) {
             const fullname = metadata.fullname;
