@@ -26,16 +26,18 @@ const initializePayment = (req, res) => {
       },
     };
 
-        const clientReq = https.request(options, apiRes => {
-            let data = '';
-            apiRes.on('data', chunk => {
-                data += chunk;
-            });
-            apiRes.on('end', () => {
-                const responseData = JSON.parse(data);
-                res.status(200).json( {authorization_url : responseData.data.authorization_url});
-            });
-        });
+    const clientReq = https.request(options, (apiRes) => {
+      let data = "";
+      apiRes.on("data", (chunk) => {
+        data += chunk;
+      });
+      apiRes.on("end", () => {
+        const responseData = JSON.parse(data);
+        res
+          .status(200)
+          .json({ authorization_url: responseData.data.authorization_url });
+      });
+    });
 
     clientReq.on("error", (error) => {
       console.error("Paystack API request error:", error);
@@ -97,19 +99,42 @@ const webhook = function (req, res) {
     .update(JSON.stringify(req.body))
     .digest("hex");
 
-  if (hash == req.headers["x-paystack-signature"]) {
+  if (hash === req.headers["x-paystack-signature"]) {
     // Retrieve the request's body
     const event = req.body;
-    console.log(event);
-   
-    if(event == 'charge.success'){
-        return res.status(200).json({ success: true, data: event.data});
+
+    // Handle different event types
+    switch (event.event) {
+      case "charge.success":
+        // Handle successful payment
+        console.log("Payment successful:", event.data);
+        return res.status(200).json({ success: true, data: event.data });
+
+      case "transfer.success":
+        // Handle successful transfer
+        console.log("Transfer successful:", event.data);
+        return res.status(200).json({ success: true, data: event.data });
+
+      case "transfer.failed":
+        // Handle failed transfer
+        console.log("Transfer failed:", event.data);
+        return res.status(200).json({ success: false, data: event.data });
+
+      // Add more cases for other event types you need to handle
+
+      default:
+        console.log("Unhandled event:", event.event);
+        return res
+          .status(200)
+          .json({ success: false, message: "Unhandled event" });
     }
-
-  } 
-
-  //res.send(200);
-  
+  } else {
+    // Invalid webhook signature
+    console.error("Invalid webhook signature");
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid webhook signature" });
+  }
 };
 
 module.exports = { initializePayment, webhook, verifyPayment };
