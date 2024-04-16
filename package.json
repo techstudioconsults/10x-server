@@ -10,6 +10,7 @@
   "author": "Babajide Odesanya",
   "license": "ISC",
   "dependencies": {
+    "@vimeo/vimeo": "^3.0.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.0.3",
     "colors": "^1.4.0",
@@ -26,6 +27,6 @@
     "paystack-api": "^2.0.6"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.1.0"
   }
 }

@@ -37,7 +37,6 @@ const initializePayment = (req, res) => {
   
           if (apiRes.statusCode === 200) {
             res.status(200).json({ authorization_url: responseData.data.authorization_url });
-            console.log(responseData);
           } else {
             res.status(apiRes.statusCode).json({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
           }
@@ -59,8 +58,8 @@ const initializePayment = (req, res) => {
 
 
 const verifyPayment = async (req, res, ref) => {
-    try {
-         ref = req.params; // Assuming reference is a URL parameter
+  try {
+    ref = req.params; // Assuming reference is a URL parameter
 
         const verifyOptions = {
             hostname: 'api.paystack.co',
@@ -72,29 +71,29 @@ const verifyPayment = async (req, res, ref) => {
             }
         };
 
-        const clientReq = https.request(verifyOptions, apiRes => {
-            let data = '';
-            apiRes.on('data', (chunk) => {
-                data += chunk;
-                
-            });
-            apiRes.on('end', () => {
-                console.log(JSON.parse(data));
-                res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
-            });
-        }).on('error', error => {
-            console.error(error);
-            res.status(500).json({ error: 'An error occurred' });
+    const clientReq = https
+      .request(verifyOptions, (apiRes) => {
+        let data = "";
+        apiRes.on("data", (chunk) => {
+          data += chunk;
         });
-
-        clientReq.end(); // No need to write any data for a GET request
-    } catch (error) {
+        apiRes.on("end", () => {
+          console.log(JSON.parse(data));
+          res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
+        });
+      })
+      .on("error", (error) => {
         console.error(error);
-        res.status(500).json({ error: 'An error occurred' });
-    }
+        res.status(500).json({ error: "An error occurred" });
+      });
+
+    clientReq.end(); // No need to write any data for a GET request
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
 };
 
 
 
 module.exports = {initializePayment,  verifyPayment};
-

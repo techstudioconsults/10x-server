@@ -5,7 +5,6 @@ const verifyPayment = require('../utils/verifyPayment');
 
 const router = express.Router();
 
-
 router
      .post('/', initializePayment)
      // .get('/:reference', verifyPayment)
