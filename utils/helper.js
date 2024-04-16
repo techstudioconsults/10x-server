@@ -1,42 +1,28 @@
-const verifyWebhookEvent = require('./verifyPayment');
+const verifyWebhookEvent = require('./verifyEvent');
 
-const webhook = async (req, res) => {
-  try {
-    // Verify the webhook event
-    const verifiedEvent = await verifyWebhookEvent(req, res);
+const webhook = async function(req, res) {
+    try {
+        // Verify the Paystack signature
+        const verifiedEvent = verifyWebhvookEvent(req);
 
-    console.log('Verified Event:', verifiedEvent);
+        if (verifiedEvent.data.status === 'success') {
+            // Payment transaction was successful
+            // Proceed with further processing or handling of the webhook event
+            console.log('Payment transaction was successful:', verifiedEvent.data);
 
-    if (verifiedEvent) {
-        if (verifiedEvent.data && verifiedEvent.data.event === 'charge.success') {
-          const metadata = verifiedEvent.data.metadata;
-        
-          if (typeof metadata === 'object' && metadata !== null) {
-            const fullname = metadata.fullname;
-            const courseId = metadata.courseId;
-            const password = metadata.password;
-        
-            console.log('Fullname:', fullname);
-            console.log('Course ID:', courseId);
-            console.log('Password:', password);
-        
-            // ... Additional logic goes here ...
-        
-            res.status(200).send('Webhook event processed successfully');
-          } else {
-            console.log('Metadata structure is not as expected');
-            res.status(400).send('Invalid metadata structure');
-          }
+            // Your code to handle successful payment transaction
+            // ...
+        } else {
+            // Payment transaction was not successful
+            console.log('Payment transaction was not successful:', verifiedEvent.data);
         }
-       
-      } else {
-        // Handle other event types as needed
-        res.status(200).send('Webhook event processed');
-      }
-  } catch (error) {
-    console.error('Error processing webhook event:', error);
-    res.status(500).send('An error occurred during webhook processing');
-  }
+
+        // Respond to Paystack with a success message
+        res.status(200).send('Webhook event processed successfully');
+    } catch (error) {
+        console.error('Error processing webhook event:', error);
+        res.status(500).send('An error occurred during webhook processing');
+    }
 };
 
 module.exports = webhook;

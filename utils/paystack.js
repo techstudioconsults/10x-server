@@ -1,33 +1,21 @@
-require('dotenv').config();
-const https = require('https');
-const crypto = require('crypto');
-
+require("dotenv").config();
+const https = require("https");
+const crypto = require("crypto");
 
 const initializePayment = (req, res) => {
     try {
-      const { email, amount, fullname, password, courseId } = req.body;
-
-      
-      const metadata = {
-        fullname,
-        courseId,
-        password,
-      };
+      const { email, amount } = req.body;
   
       if (!email || !amount) {
         return res.status(400).json({ error: 'Email and amount are required' });
       }
   
-      const params = JSON.stringify({ email, amount: amount * 100, metadata});
+      const params = JSON.stringify({ email, amount: amount * 100 });
       const options = {
         hostname: 'api.paystack.co',
         port: 443,
         path: '/transaction/initialize',
         method: 'POST',
-        ref: '',
-        metadata: {
-           fullname, courseId, password
-        },
         headers: {
           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
           'Content-Type': 'application/json',
@@ -47,7 +35,6 @@ const initializePayment = (req, res) => {
   
           if (apiRes.statusCode === 200) {
             res.status(200).json({ authorization_url: responseData.data.authorization_url });
-            console.log(responseData);
           } else {
             res.status(apiRes.statusCode).json({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
           }
@@ -69,8 +56,8 @@ const initializePayment = (req, res) => {
 
 
 const verifyPayment = async (req, res, ref) => {
-    try {
-         ref = req.params; // Assuming reference is a URL parameter
+  try {
+    ref = req.params; // Assuming reference is a URL parameter
 
         const verifyOptions = {
             hostname: 'api.paystack.co',
@@ -82,26 +69,27 @@ const verifyPayment = async (req, res, ref) => {
             }
         };
 
-        const clientReq = https.request(verifyOptions, apiRes => {
-            let data = '';
-            apiRes.on('data', (chunk) => {
-                data += chunk;
-                
-            });
-            apiRes.on('end', () => {
-                console.log(JSON.parse(data));
-                res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
-            });
-        }).on('error', error => {
-            console.error(error);
-            res.status(500).json({ error: 'An error occurred' });
+    const clientReq = https
+      .request(verifyOptions, (apiRes) => {
+        let data = "";
+        apiRes.on("data", (chunk) => {
+          data += chunk;
         });
-
-        clientReq.end(); // No need to write any data for a GET request
-    } catch (error) {
+        apiRes.on("end", () => {
+          console.log(JSON.parse(data));
+          res.status(200).json(JSON.parse(data)); // Send parsed JSON data as response
+        });
+      })
+      .on("error", (error) => {
         console.error(error);
-        res.status(500).json({ error: 'An error occurred' });
-    }
+        res.status(500).json({ error: "An error occurred" });
+      });
+
+    clientReq.end(); // No need to write any data for a GET request
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
 };
 
 
@@ -122,4 +110,3 @@ const verifyPayment = async (req, res, ref) => {
 
 
 module.exports = {initializePayment,  verifyPayment};
-
