@@ -1,33 +1,23 @@
 require('dotenv').config();
 const https = require('https');
 const crypto = require('crypto');
-
+const paystack = require('paystack-api')(process.env.PAYSTACK_SECRET_KEY);
 
 const initializePayment = (req, res) => {
     try {
-      const { email, amount, fullname, password, courseId } = req.body;
-
-      
-      const metadata = {
-        fullname,
-        courseId,
-        password,
-      };
+      const { email, amount} = req.body;
   
       if (!email || !amount) {
         return res.status(400).json({ error: 'Email and amount are required' });
       }
   
-      const params = JSON.stringify({ email, amount: amount * 100, metadata});
+      const params = JSON.stringify({ email, amount: amount * 100});
       const options = {
         hostname: 'api.paystack.co',
         port: 443,
         path: '/transaction/initialize',
         method: 'POST',
         ref: '',
-        metadata: {
-           fullname, courseId, password
-        },
         headers: {
           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
           'Content-Type': 'application/json',
@@ -103,21 +93,6 @@ const verifyPayment = async (req, res, ref) => {
         res.status(500).json({ error: 'An error occurred' });
     }
 };
-
-
-// const webhook = function(req, res) {
-//  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
-
-//   if (hash == req.headers['x-paystack-signature']) {
-//     // Retrieve the request's body
-//     const event = req.body;
-//     console.log(event);
-
-
-//   } 
-  
-// };
-
 
 
 

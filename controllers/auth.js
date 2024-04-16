@@ -3,42 +3,21 @@ const User = require('../models/User');
 const asyncHandler = require('../middleware/async');
 const sendEmail = require('../utils/sendEmail');
 const sendTokenResponse = require('../utils/sendToken');
-const { initializePayment, webhook } = require('../utils/paystack');
+const { initializePayment } = require('../utils/paystack');
 
 
 //@desc     Register user
 // @route   POST /api/v1/auth/register
 // @access  Public
-const register = asyncHandler(async (req, res, next) => {
-  const { fullname, email, password, courseId, amount } = req.body;
+const register = asyncHandler(async(req, res, next) => {
+  const { email, password, fullname, amount} = req.body ;
 
-  console.log(req.body);
+  await initializePayment(req, res);
 
-  // Check if required properties are present in the request body
-  if (!email || !amount) {
-    return res.status(400).json({ error: 'Email and amount are required' });
-  }
+    // create user
+  const user = await User.create({fullname, email, password,});
 
-  try {
-    // Check if the user is already registered
-    let user = await User.findOne({ email });
-
-       // Initialize the payment process
-       await initializePayment(req, res);
-
-       // Store the user and course information in the session or a database
-       req.session.userInfo = { fullname, email, password, courseId };
-
-       console.log(req.session.userInfo);
-
-  } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ error: 'An error occurred during payment' });
-  }
 });
-
-
-
 
 
 
@@ -192,4 +171,4 @@ if(!user){
 
 
 
-module.exports = { register, login, getMe, updateDetails, updatePassword, forgotPassword, resetPassword }
+module.exports = { register, login, getMe, updateDetails, updatePassword, forgotPassword, resetPassword };
