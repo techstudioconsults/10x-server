@@ -1,19 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const contentSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: [true, 'Please add a content title']
-    },
-    file_url: {
-        type: String,
-        required: [true, 'Please add a file URL']
-    },
-    module: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module',
-        required: true
-    }
-});
+const contentSchema = new mongoose.Schema(
+  {
+    _id: mongoose.Schema.Types.ObjectId,
+    title: String,
+    file_url: String,
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Content', contentSchema);
+const ContentModel = mongoose.model("Content", contentSchema);
+
+module.exports = { contentSchema, ContentModel };

@@ -1,56 +1,77 @@
-const { RegularCourseModel, DraftCourseModel } = require("../models/Course");
+const { RegularCourseModel, DraftedCourseModel } = require("../models/Course");
 
-// Create a regular or draft course
-exports.createCourse = async (req, res) => {
+// Create a regular course
+exports.createRegularCourse = async (req, res) => {
   try {
-    const { draft = false, ...courseData } = req.body;
-    let course;
-
-    if (draft) {
-      course = new DraftCourseModel({ ...courseData, draft });
-    } else {
-      course = new RegularCourseModel({ ...courseData, draft });
-    }
-
-    await course.save();
-    res.status(201).json(course);
+    const courseData = req.body;
+    const regularCourse = new RegularCourseModel({
+      ...courseData,
+      draft: false,
+    });
+    await regularCourse.save();
+    res.status(201).json(regularCourse);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create course" });
+    res.status(500).json({ error: "Failed to create regular course" });
+    console.log(error);
   }
 };
 
-// Update a regular or draft course
-exports.updateCourse = async (req, res) => {
+// Create a drafted course
+exports.createDraftedCourse = async (req, res) => {
+  try {
+    const courseData = req.body;
+    const draftedCourse = new DraftedCourseModel({
+      ...courseData,
+      draft: true,
+    });
+    await draftedCourse.save();
+    res.status(201).json(draftedCourse);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create drafted course" });
+  }
+};
+
+// Update a regular course
+exports.updateRegularCourse = async (req, res) => {
   try {
     const courseId = req.params.id;
-    const { draft } = req.body;
-    let updatedCourse;
-
-    if (draft === true) {
-      updatedCourse = await DraftCourseModel.findByIdAndUpdate(
-        courseId,
-        { ...req.body, draft: true },
-        { new: true }
-      );
-    } else {
-      updatedCourse = await RegularCourseModel.findByIdAndUpdate(
-        courseId,
-        req.body,
-        { new: true }
-      );
-    }
+    const updatedCourse = await RegularCourseModel.findByIdAndUpdate(
+      courseId,
+      req.body,
+      { new: true }
+    );
 
     if (!updatedCourse) {
-      return res.status(404).json({ error: "Course not found" });
+      return res.status(404).json({ error: "Regular course not found" });
     }
 
     res.json(updatedCourse);
   } catch (error) {
-    res.status(500).json({ error: "Failed to update course" });
+    res.status(500).json({ error: "Failed to update regular course" });
   }
 };
 
-// Delete a regular or draft course
+// Update a drafted course
+exports.updateDraftedCourse = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const updatedCourse = await DraftedCourseModel.findByIdAndUpdate(
+      courseId,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ error: "Drafted course not found" });
+    }
+
+    res.json(updatedCourse);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update drafted course" });
+  }
+};
+
+// Delete a regular course
 exports.deleteRegularCourse = async (req, res) => {
   try {
     const courseId = req.params.id;
@@ -67,10 +88,11 @@ exports.deleteRegularCourse = async (req, res) => {
   }
 };
 
+// Delete a drafted course
 exports.deleteDraftedCourse = async (req, res) => {
   try {
     const courseId = req.params.id;
-    const deletedCourse = await DraftCourseModel.findByIdAndDelete(courseId);
+    const deletedCourse = await DraftedCourseModel.findByIdAndDelete(courseId);
     if (!deletedCourse) {
       console.log(`Drafted course with ID ${courseId} not found.`);
       return res.status(404).json({ error: "Drafted course not found" });
@@ -86,20 +108,20 @@ exports.deleteDraftedCourse = async (req, res) => {
 // Get all regular courses
 exports.getAllRegularCourses = async (req, res) => {
   try {
-    const regularCourses = await RegularCourseModel.find();
+    const regularCourses = await RegularCourseModel.find({ draft: false });
     res.json(regularCourses);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch regular courses" });
   }
 };
 
-// Get all draft courses
-exports.getAllDraftCourses = async (req, res) => {
+// Get all drafted courses
+exports.getAllDraftedCourses = async (req, res) => {
   try {
-    const draftCourses = await DraftCourseModel.find();
-    res.json(draftCourses);
+    const draftedCourses = await DraftedCourseModel.find();
+    res.json(draftedCourses);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch draft courses" });
+    res.status(500).json({ error: "Failed to fetch drafted courses" });
   }
 };
 
@@ -109,6 +131,7 @@ exports.searchRegularCourseByTitle = async (req, res) => {
     const { title } = req.query;
     const regularCourses = await RegularCourseModel.find({
       title: { $regex: new RegExp(title, "i") },
+      draft: false,
     });
     res.json(regularCourses);
   } catch (error) {
@@ -116,16 +139,16 @@ exports.searchRegularCourseByTitle = async (req, res) => {
   }
 };
 
-// Search draft courses by title
-exports.searchDraftCourseByTitle = async (req, res) => {
+// Search drafted courses by title
+exports.searchDraftedCourseByTitle = async (req, res) => {
   try {
     const { title } = req.query;
-    const draftCourses = await DraftCourseModel.find({
+    const draftedCourses = await DraftedCourseModel.find({
       title: { $regex: new RegExp(title, "i") },
     });
-    res.json(draftCourses);
+    res.json(draftedCourses);
   } catch (error) {
-    res.status(500).json({ error: "Failed to search for draft courses" });
+    res.status(500).json({ error: "Failed to search for drafted courses" });
   }
 };
 
@@ -135,7 +158,7 @@ exports.findRegularCourseById = async (req, res) => {
     const courseId = req.params.id;
     const regularCourse = await RegularCourseModel.findById(courseId);
 
-    if (!regularCourse) {
+    if (!regularCourse || regularCourse.draft) {
       return res.status(404).json({ error: "Regular course not found" });
     }
 
@@ -145,18 +168,18 @@ exports.findRegularCourseById = async (req, res) => {
   }
 };
 
-// Find draft course by ID
-exports.findDraftCourseById = async (req, res) => {
+// Find drafted course by ID
+exports.findDraftedCourseById = async (req, res) => {
   try {
     const courseId = req.params.id;
-    const draftCourse = await DraftCourseModel.findById(courseId);
+    const draftedCourse = await DraftedCourseModel.findById(courseId);
 
-    if (!draftCourse) {
-      return res.status(404).json({ error: "Draft course not found" });
+    if (!draftedCourse) {
+      return res.status(404).json({ error: "Drafted course not found" });
     }
 
-    res.json(draftCourse);
+    res.json(draftedCourse);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch draft course" });
+    res.status(500).json({ error: "Failed to fetch drafted course" });
   }
 };

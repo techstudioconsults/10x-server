@@ -2,40 +2,20 @@ const express = require("express");
 const router = express.Router();
 const courseController = require("../controllers/courses");
 
-// Create a regular or draft course
-router.post("/courses", courseController.createCourse);
+// Regular Courses
+router.post("/regular", courseController.createRegularCourse);
+router.put("/regular/:id", courseController.updateRegularCourse);
+router.delete("/regular/:id", courseController.deleteRegularCourse);
+router.get("/regular", courseController.getAllRegularCourses);
+router.get("/regular/search/:name", courseController.searchRegularCourseByTitle);
+router.get("/regular/:id", courseController.findRegularCourseById);
 
-// Update a regular or draft course
-router.put("/courses/:id", courseController.updateCourse);
-
-// Delete regular course by ID
-router.delete('/regular/:id', courseController.deleteRegularCourse);
-
-// Delete drafted course by ID
-router.delete('/draft/:id', courseController.deleteDraftedCourse);
-
-// Get all regular courses
-router.get("/courses/regular", courseController.getAllRegularCourses);
-
-// Get all draft courses
-router.get("/courses/draft", courseController.getAllDraftCourses);
-
-// Search regular courses by title
-router.get(
-  "/courses/regular/search/:title",
-  courseController.searchRegularCourseByTitle
-);
-
-// Route to find a single regular course by ID
-router.get("/courses/regular/:id", courseController.findRegularCourseById);
-
-// Route to find a single draft course by ID
-router.get("/courses/draft/:id", courseController.findDraftCourseById);
-
-// Search draft courses by title
-router.get(
-  "/courses/draft/search/:title",
-  courseController.searchDraftCourseByTitle
-);
+// Drafted Courses
+router.post("/drafted", courseController.createDraftedCourse);
+router.put("/drafted/:id", courseController.updateDraftedCourse);
+router.delete("/drafted/:id", courseController.deleteDraftedCourse);
+router.get("/drafted", courseController.getAllDraftedCourses);
+router.get("/drafted/search/:name", courseController.searchDraftedCourseByTitle);
+router.get("/drafted/:id", courseController.findDraftedCourseById);
 
 module.exports = router;

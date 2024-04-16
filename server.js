@@ -1,15 +1,13 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const errorHandler = require('./middleware/error');
-const connectDB = require('./config/db');
-const morgan = require('morgan');
-const colors = require('colors');
-const cookieParser = require('cookie-parser');
-const fileUpload = require('express-fileupload');
-const cors = require('cors');
-const session = require('express-session')
-
-
+const express = require("express");
+const dotenv = require("dotenv");
+const errorHandler = require("./middleware/error");
+const connectDB = require("./config/db");
+const morgan = require("morgan");
+const colors = require("colors");
+const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
+const cors = require("cors");
+const session = require("express-session");
 
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -20,12 +18,13 @@ connectDB();
 const app = express();
 
 // Configure session middleware
-app.use(session({
-    secret: process.env.SESSION_SECRET, 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-  }));
-
+  })
+);
 
 // Route files
 const auth = require("./routes/auth");
@@ -59,13 +58,11 @@ if (process.env.NODE_ENV === "development") {
 app.use(errorHandler);
 
 // Mount routers
-app.use('/api/v1/auth', auth);
-app.use('/api/v1/users', users);
-app.use('/api/v1/resources', resources);
-app.use('/api/v1/paystack', paystack);
-app.use('/api/v1/reviews', reviews);
-
-
+app.use("/api/v1/auth", auth);
+app.use("/api/v1/users", users);
+app.use("/api/v1/resources", resources);
+app.use("/api/v1/paystack", paystack);
+app.use("/api/v1/course", courses);
 
 const PORT = process.env.PORT || 5000;
 
