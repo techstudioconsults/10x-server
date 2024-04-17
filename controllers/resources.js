@@ -46,13 +46,12 @@ const createResource = asyncHandler(async(req, res, next) => {
       req.body.photo = photoUrl;
 
     // Upload the video to Vimeo
-    const videoUri = await uploadVideo(req.files.video.tempFilePath, {
-         name: 'Untitled', // Customize the name as needed
-         description: 'The description goes here.' // Customize the description as needed
-  });
-
-  req.body.video = videoUri;
-     
+  //   const videoUri = await uploadVideo(req.files.video.tempFilePath, {
+  //        name: 'Untitled', // Customize the name as needed
+  //        description: 'The description goes here.' // Customize the description as needed
+  // });
+ // req.body.video = videoUri;
+       
   const resource = await Resource.create({...req.body});
  
     res.status(201).json({ success: true, data: resource });

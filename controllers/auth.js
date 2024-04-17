@@ -64,9 +64,14 @@ const getMe = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/auth/updatedetails
 // @access  Private
 const updateDetails = asyncHandler(async (req, res, next) => {
+  
+   // upload image 
+  const photoUrl = await uploadImage(req.files.photo.tempFilePath);
+    req.body.photo = photoUrl;
   const fieldsToUpdate = {
-    name: req.body.name,
+    name: req.body.fullnamename,
     email: req.body.email,
+    photo: req.photo.url
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
