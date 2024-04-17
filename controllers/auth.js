@@ -4,6 +4,7 @@ const asyncHandler = require('../middleware/async');
 const sendEmail = require('../utils/sendEmail');
 const sendTokenResponse = require('../utils/sendToken');
 const { initializePayment } = require('../utils/paystack');
+const uploadImage = require('../utils/uploadImage');
 
 
 //@desc     Register user
@@ -15,10 +16,9 @@ const register = asyncHandler(async(req, res, next) => {
   await initializePayment(req, res);
 
     // create user
-  const user = await User.create({fullname, email, password,});
+  const user = await User.create({fullname, email, password});
 
 });
-
 
 
 //@desc     Login user
@@ -71,7 +71,7 @@ const updateDetails = asyncHandler(async (req, res, next) => {
   const fieldsToUpdate = {
     name: req.body.fullnamename,
     email: req.body.email,
-    photo: req.photo.url
+    photo: req.body.photo
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
