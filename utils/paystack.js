@@ -1,7 +1,7 @@
 require('dotenv').config();
 const https = require('https');
 const crypto = require('crypto');
-const paystack = require('paystack-api')(process.env.PAYSTACK_SECRET_KEY);
+
 
 const initializePayment = (req, res) => {
     try {
@@ -57,7 +57,7 @@ const initializePayment = (req, res) => {
   };
 
 
-const verifyPayment = async (req, res, ref) => {
+const verifyPaymentRef = async (req, res, ref) => {
   try {
     ref = req.params; // Assuming reference is a URL parameter
 
@@ -96,4 +96,4 @@ const verifyPayment = async (req, res, ref) => {
 
 
 
-module.exports = {initializePayment,  verifyPayment};
+module.exports = {initializePayment,  verifyPaymentRef};
