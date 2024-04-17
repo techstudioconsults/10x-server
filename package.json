@@ -1,5 +1,5 @@
 {
-  "name": "sales-api",
+  "name": "10xrevenue-api",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -23,8 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.1.3",
     "morgan": "^1.10.0",
-    "nodemailer": "^6.9.11",
-    "paystack-api": "^2.0.6"
+    "nodemailer": "^6.9.11"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
