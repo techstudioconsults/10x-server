@@ -5,18 +5,43 @@ const sendEmail = require('../utils/sendEmail');
 const sendTokenResponse = require('../utils/sendToken');
 const { initializePayment } = require('../utils/paystack');
 const uploadImage = require('../utils/uploadImage');
+const Payment = require('../models/Payment');
 
 
 //@desc     Register user
 // @route   POST /api/v1/auth/register
 // @access  Public
 const register = asyncHandler(async(req, res, next) => {
-  const { email, password, fullname, amount} = req.body ;
+  const { email, password, fullname, amount, courseId} = req.body ;
 
-  await initializePayment(req, res);
-
+  try{
+     
     // create user
-  const user = await User.create({fullname, email, password});
+   const user = await User.create({fullname, email, password});
+
+
+    //Initiate payment with paystack
+    const paymentData = await initializePayment(req);
+
+      // Create a new payment record with pending status
+    const payment = await Payment.create({
+      user: user._id,
+      amount,
+      courseId,
+      reference: paymentData.responseData.data.reference,
+      status: 'pending'
+    });
+
+    //save the payment record
+    await payment.save();
+
+    // Send token response along with the payment data
+    sendTokenResponse(user, 200, res, paymentData);
+
+  }catch(error){
+    console.error('Error during registration:', error);
+    res.status(500).json({ error: 'An error occurred during registration' });
+  }
 
 });
 

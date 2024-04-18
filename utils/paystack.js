@@ -3,15 +3,16 @@ const https = require('https');
 const crypto = require('crypto');
 
 
-const initializePayment = (req, res) => {
+const initializePayment = (req) => {
+  return new Promise((resolve, reject) => {
     try {
-      const { email, amount} = req.body;
-  
+      const { email, amount } = req.body;
       if (!email || !amount) {
-        return res.status(400).json({ error: 'Email and amount are required' });
+        reject({ error: 'Email and amount are required' });
+        return;
       }
-  
-      const params = JSON.stringify({ email, amount: amount * 100});
+
+      const params = JSON.stringify({ email, amount: amount * 100 });
       const options = {
         hostname: 'api.paystack.co',
         port: 443,
@@ -24,38 +25,35 @@ const initializePayment = (req, res) => {
           'Content-Length': params.length,
         },
       };
-  
+
       const clientReq = https.request(options, (apiRes) => {
         let data = '';
-  
         apiRes.on('data', (chunk) => {
           data += chunk;
         });
-  
         apiRes.on('end', () => {
           const responseData = JSON.parse(data);
-  
           if (apiRes.statusCode === 200) {
-            res.status(200).json({ authorization_url: responseData.data.authorization_url });
+            resolve({ responseData });
           } else {
-            res.status(apiRes.statusCode).json({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
+            reject({ error: `An error occurred while contacting payment gateway: ${responseData.message}` });
           }
         });
       });
-  
+
       clientReq.on('error', (error) => {
         console.error('Paystack API request error:', error);
-        res.status(500).json({ error: 'An error occurred while contacting payment gateway' });
+        reject({ error: 'An error occurred while contacting payment gateway' });
       });
-  
+
       clientReq.write(params);
       clientReq.end();
     } catch (error) {
       console.error('Initialization error:', error);
-      res.status(500).json({ error: 'An error occurred during payment initialization' });
+      reject({ error: 'An error occurred during payment initialization' });
     }
-  };
-
+  });
+};
 
 const verifyPaymentRef = async (req, res, ref) => {
   try {
