@@ -31,7 +31,7 @@ const auth = require("./routes/auth");
 const users = require("./routes/users");
 const resources = require("./routes/resources");
 const paystack = require("./routes/paystack");
-const courses = require("./routes/course");
+
 
 //Body parser
 app.use(express.json());
@@ -62,7 +62,7 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/resources", resources);
 app.use("/api/v1/paystack", paystack);
-app.use("/api/v1/course", courses);
+
 
 const PORT = process.env.PORT || 5000;
 

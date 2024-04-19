@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 const { contentSchema } = require("./Content");
 
-const moduleSchema = new mongoose.Schema(
-  {
-    _id: mongoose.Schema.Types.ObjectId, 
-    title: String,
-    content: [contentSchema],
+const moduleSchema = new mongoose.Schema({
+  
+  
   },
   { timestamps: true }
 );

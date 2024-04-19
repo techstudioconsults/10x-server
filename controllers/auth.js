@@ -64,14 +64,16 @@ const getMe = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/auth/updatedetails
 // @access  Private
 const updateDetails = asyncHandler(async (req, res, next) => {
-  
-   // upload image 
-  const photoUrl = await uploadImage(req.files.photo.tempFilePath);
-    req.body.photo = photoUrl;
+  let photoUrl = '';
+   if(req.files && req.files.photo){
+      //uploadImage if photo is provided
+    photoUrl = await uploadImage(req.files.photo.tempFilePath);  
+   }
+ 
   const fieldsToUpdate = {
     fullname: req.body.fullname,
     email: req.body.email,
-    photo: req.body.photo
+    photo: photoUrl
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
