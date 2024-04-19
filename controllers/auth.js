@@ -75,7 +75,8 @@ const updateDetails = asyncHandler(async (req, res, next) => {
   const fieldsToUpdate = {
     fullname: req.body.fullname,
     email: req.body.email,
-    photo: photoUrl
+     // Only update the photo if a new photo is provided
+     ...(photoUrl && { photo: photoUrl })
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
