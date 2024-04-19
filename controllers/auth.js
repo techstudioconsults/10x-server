@@ -94,7 +94,7 @@ const updateDetails = asyncHandler(async (req, res, next) => {
   const photoUrl = await uploadImage(req.files.photo.tempFilePath);
     req.body.photo = photoUrl;
   const fieldsToUpdate = {
-    name: req.body.fullname,
+    fullname: req.body.fullname,
     email: req.body.email,
     photo: req.body.photo
   };
