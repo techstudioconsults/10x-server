@@ -65,6 +65,8 @@ const getMe = asyncHandler(async (req, res, next) => {
 // @access  Private
 const updateDetails = asyncHandler(async (req, res, next) => {
   let photoUrl = '';
+  
+  // check if photo is provided in the request
    if(req.files && req.files.photo){
       //uploadImage if photo is provided
     photoUrl = await uploadImage(req.files.photo.tempFilePath);  
