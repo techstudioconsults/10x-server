@@ -24,7 +24,7 @@ const resources = JSON.parse(fs.readFileSync(`${__dirname}/_data/resources.json`
 // Import into DB
 const importData = async() => {
     try {
-        await User.create(users);
+    //     await User.create(users);
         await Resource.create(resources);
         console.log('Data Imported...'.green.inverse);
         process.exit();

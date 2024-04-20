@@ -10,6 +10,14 @@ const ResourceSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'Pleasea add a tuition cost']
     },
+     detail: {
+       type: String,
+       required:[true, "please add a description"]
+     },
+      description: {
+        type: String,
+      },
+
     category: {
         type: String,
         required: [true, "Please add a category"],
