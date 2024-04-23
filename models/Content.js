@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const contentSchema = new mongoose.Schema(
   {
-    _id: mongoose.Schema.Types.ObjectId,
+    // _id: mongoose.Schema.Types.ObjectId,
     title: String,
     file_url: String,
   },

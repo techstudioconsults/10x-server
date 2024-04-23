@@ -1,9 +1,20 @@
 const { RegularCourseModel, DraftedCourseModel } = require("../models/Course");
+const { uploadVideoToVimeo } = require('./vimeoUploader');
 
 // Create a regular course
 exports.createRegularCourse = async (req, res) => {
   try {
     const courseData = req.body;
+
+    // Iterate through modules and contents to upload videos to Vimeo
+    for (const module of courseData.modules) {
+      for (const content of module.content) {
+        if (content.file_url) {
+          content.file_url = await uploadVideoToVimeo(content.file_url);
+        }
+      }
+    }
+
     const regularCourse = new RegularCourseModel({
       ...courseData,
       draft: false,
@@ -20,6 +31,16 @@ exports.createRegularCourse = async (req, res) => {
 exports.createDraftedCourse = async (req, res) => {
   try {
     const courseData = req.body;
+
+    // Iterate through modules and contents to upload videos to Vimeo
+    for (const module of courseData.modules) {
+      for (const content of module.content) {
+        if (content.file_url) {
+          content.file_url = await uploadVideoToVimeo(content.file_url);
+        }
+      }
+    }
+
     const draftedCourse = new DraftedCourseModel({
       ...courseData,
       draft: true,
@@ -30,6 +51,7 @@ exports.createDraftedCourse = async (req, res) => {
     res.status(500).json({ error: "Failed to create drafted course" });
   }
 };
+
 
 // Update a regular course
 exports.updateRegularCourse = async (req, res) => {
@@ -102,6 +124,7 @@ exports.deleteDraftedCourse = async (req, res) => {
   } catch (error) {
     console.error("Error deleting drafted course:", error);
     res.status(500).json({ error: "Failed to delete drafted course" });
+    console.log(error);
   }
 };
 
