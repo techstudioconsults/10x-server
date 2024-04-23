@@ -1,5 +1,5 @@
 const { RegularCourseModel, DraftedCourseModel } = require("../models/Course");
-const { uploadVideoToVimeo } = require('./vimeoUploader');
+const { uploadVideoToVimeo } = require("./vimeoUploader");
 
 // Create a regular course
 exports.createRegularCourse = async (req, res) => {
@@ -51,7 +51,6 @@ exports.createDraftedCourse = async (req, res) => {
     res.status(500).json({ error: "Failed to create drafted course" });
   }
 };
-
 
 // Update a regular course
 exports.updateRegularCourse = async (req, res) => {

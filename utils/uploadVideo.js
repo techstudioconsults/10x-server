@@ -1,6 +1,6 @@
 // const Vimeo = require('vimeo').Vimeo;
 
-// Initialize Vimeo client with your credentials
+// //Initialize Vimeo client with your credentials
 // const client = new Vimeo(`${process.env.CLIENT_ID }`, `${process.env.CLIENT_SECRET}`, `${process.env.ACCESS_TOKEN}`);
 
 // // Function to upload a video to Vimeo
