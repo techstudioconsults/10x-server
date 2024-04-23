@@ -1,14 +1,13 @@
-const crypto = require('crypto');
 const User = require('../models/User'); 
 const PaymentDetails = require('../models/Payment');
+const asyncHandler = require('../middleware/async');
 
+// verify transaction using webhook
 const verifyWebhookEvent = async (req, res) => {
-  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
       try{
-  if (hash === req.headers['x-paystack-signature']) {
-        const event = req.body;
-        if(event.event == "charge.success"){
-          const { data } = event;
+        const payload = req.body;
+        if(payload.event == "charge.success"){
+          const { data } = payload;
 
           const customerReference = data.reference
           const fieldsToUpdate = {
@@ -22,8 +21,8 @@ const verifyWebhookEvent = async (req, res) => {
         })
           res.status(200).json({message: "webhook!!!!", customerReference});
         }
-        if(event.event == "transfer.failed"){
-          const { data } = event;
+        if(payload.event == "transfer.failed"){
+          const { data } = payload;
           const customerEmail = data.customer.email
       
           const userDetails = await User.findOne({ customerEmail });
@@ -36,8 +35,6 @@ const verifyWebhookEvent = async (req, res) => {
           await details.remove();
 
           res.status(200).json({message: "Failed!!!!", customerEmail, customerReference});
-
-        }
           
          }
        
@@ -46,5 +43,24 @@ const verifyWebhookEvent = async (req, res) => {
     }
     } 
 
+    const getCourseUsersDetails = asyncHandler(async(req, res, next) => {
+      const courseId = req.params.id;
+      const userDetails = await PaymentDetails.find({courseId: courseId})
+
+      res.status(200).json({ success: true, count: userDetails.length, data: userDetails});
+  })
+
+  const getUserById = asyncHandler(async(req, res, next) => {
+    const payment = await PaymentDetails.findById(req.params.id).populate({
+      path: 'User',
+      select: 'fullname email '
+    }); if(!payment){
+      return next(new ErrorResponse(`No  with the id of ${req.params.id}`, 404))
+    }
+      
+    
+  res.status(200).json({ success: true, data: payment})
+  })
+
         
-module.exports = verifyWebhookEvent ;
+module.exports = { verifyWebhookEvent, getCourseUsersDetails, getUserById } ;

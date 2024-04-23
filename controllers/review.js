@@ -1,6 +1,6 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
-const Resource = require('../models/Resources');
+const Course = require('../models/Course');
 const Review = require('../models/Review');
 
 
@@ -10,8 +10,8 @@ const Review = require('../models/Review');
 //@route    GET /api/v1/resources/:resourceId/reviews
 // @access  Public
 const getReviews = asyncHandler(async (req, res, next) => {
-    if(req.params.resourceId){
-      const reviews = await Review.find({ resource: req.params.resourceId });
+    if(req.params.courseId){
+      const reviews = await Review.find({ course: req.params.courseId });
        return res.status(200).json({
          success: true,
          count: reviews.length,
@@ -30,7 +30,7 @@ const getReviews = asyncHandler(async (req, res, next) => {
 // @access  Public
 const getReview = asyncHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id).populate({
-    path: 'resource',
+    path: 'course',
     select: 'title'
   });
 
@@ -48,13 +48,13 @@ const getReview = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/resources/:resourceId/reviews
 // @access  Private
 const addReview = asyncHandler(async (req, res, next) => {
-     req.body.resource = req.params.resourceId;
+     req.body.course = req.params.courseId;
      req.body.user = req.user.id;
 
-     const resource = await Resource.findById(req.params.resourceId);
+     const course = await Course.findById(req.params.courseId);
 
-     if(!resource){
-        return next(new ErrorResponse(`No resource with the id of ${req.params.resourceId}`, 404))
+     if(!course){
+        return next(new ErrorResponse(`No course with the id of ${req.params.courseId}`, 404))
      }
 
      const review = await Review.create(req.body);
@@ -94,7 +94,7 @@ const updateReview = asyncHandler(async (req, res, next) => {
    });
    
    // Recalculate and update the resource's average rating
-    await Review.getAverageRating(review.resource);
+    await Review.getAverageRating(review.course);
   });
 
 

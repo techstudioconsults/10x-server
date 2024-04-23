@@ -3,7 +3,7 @@ const User = require('../models/User');
 const asyncHandler = require('../middleware/async');
 const sendEmail = require('../utils/sendEmail');
 const sendTokenResponse = require('../utils/sendToken');
-const { initializePayment } = require('../utils/paystack');
+const { initializePayment } = require('../services/paystack');
 const uploadImage = require('../utils/uploadImage');
 const Payment = require('../models/Payment');
 
@@ -25,10 +25,12 @@ const register = asyncHandler(async(req, res, next) => {
 
       // Create a new payment record with pending status
     const payment = await Payment.create({
-      user: user._id,
+      User: user._id,
       amount,
       courseId,
-      reference: paymentData.responseData.data.reference,
+      fullname,
+      email,
+      reference: paymentData.data.reference,
       status: 'pending'
     });
 

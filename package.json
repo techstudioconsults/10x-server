@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@vimeo/vimeo": "^3.0.2",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.0.3",
     "colors": "^1.4.0",
