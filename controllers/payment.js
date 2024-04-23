@@ -34,7 +34,7 @@ const verifyWebhookEvent = async (req, res) => {
 
           await details.remove();
 
-          res.status(200).json({message: "Failed!!!!", customerEmail, customerReference});
+          res.status(200).json({message: "Failed!!!!!", customerEmail, customerReference});
           
          }
        
