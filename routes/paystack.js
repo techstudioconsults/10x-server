@@ -1,15 +1,18 @@
 const express = require('express');
-const { initializePayment, verifyPaymentRef } = require('../utils/paystack');
+const { initializePayment } = require('../utils/paystack');
 const whitelistIP = require('../middleware/whitelist');
-const verifyPayment = require('../utils/verifyPayment');
+const verifySignature = require('../middleware/verifySignature');
+const { verifyWebhookEvent, getCourseUsersDetails, getUserById } = require('../controllers/payment');
 
-
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
      .post('/', initializePayment)
-     .get('/:reference', verifyPaymentRef)
-     .post('/webhook', verifyPayment);
+     // .get('/:reference', verifyPaymentRef)
+     .post('/webhook',whitelistIP, verifySignature, verifyWebhookEvent)
 
+ router
+     .route('/:id')
+     .get(getCourseUsersDetails)
 
 module.exports = router;

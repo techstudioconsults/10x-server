@@ -1,5 +1,5 @@
 // Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = (user, statusCode, res, paymentData) => {
     // create token
   const token = user.getSignedJwtToken();
   
@@ -17,7 +17,8 @@ const sendTokenResponse = (user, statusCode, res) => {
    .cookie('token', token, options)
    .json({
     success: true,
-    token
+    token,
+    paymentData
    })
 };
 

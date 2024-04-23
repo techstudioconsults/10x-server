@@ -11,3 +11,4 @@ const moduleSchema = new mongoose.Schema({
 const ModuleModel = mongoose.model("Module", moduleSchema);
 
 module.exports = { moduleSchema, ModuleModel };
+

@@ -8,7 +8,7 @@ dotenv.config({ path: './config/config.env'});
 
 //Load models
 const User = require('./models/User');
-const Resource = require('./models/Resources');
+const Course = require('./models/Course');
 
 
 
@@ -17,15 +17,20 @@ mongoose.connect(process.env.MONGO_URI);
 
 // Read JSON file
 const users = JSON.parse(fs.readFileSync(`${__dirname}/_data/users.json`, 'utf-8'));
-const resources = JSON.parse(fs.readFileSync(`${__dirname}/_data/resources.json`, 'utf-8'));
+const courses = JSON.parse(fs.readFileSync(`${__dirname}/_data/courses.json`, 'utf-8'));
 
 
 
 // Import into DB
 const importData = async() => {
     try {
+<<<<<<< HEAD
     //     await User.create(users);
         await Resource.create(resources);
+=======
+        //await User.create(users);
+        await Course.create(courses);
+>>>>>>> 9c43d337ebb2e09b6ada914e1f7f928811dfacb6
         console.log('Data Imported...'.green.inverse);
         process.exit();
     } catch(err){

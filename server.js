@@ -26,10 +26,16 @@ app.use(
   })
 );
 
+app.set('trust proxy', true);
+
 // Route files
 const auth = require("./routes/auth");
 const users = require("./routes/users");
+<<<<<<< HEAD
 const resources = require("./routes/resources");
+=======
+const courses = require("./routes/course");
+>>>>>>> 9c43d337ebb2e09b6ada914e1f7f928811dfacb6
 const paystack = require("./routes/paystack");
 
 
@@ -60,7 +66,11 @@ app.use(errorHandler);
 // Mount routers
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
+<<<<<<< HEAD
 app.use("/api/v1/resources", resources);
+=======
+app.use("/api/v1/course", courses);
+>>>>>>> 9c43d337ebb2e09b6ada914e1f7f928811dfacb6
 app.use("/api/v1/paystack", paystack);
 
 

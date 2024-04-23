@@ -1,70 +1,105 @@
-const Course = require('../models/Course');
-const Module = require('../models/Module');
-const Content = require('../models/Content');
-const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
-const { uploadVideo } = require('../utils/uploadVideo'); 
-const uploadImage = require('../utils/uploadImage'); 
+const asyncHandler = require('../middleware/async');
+const Course = require('../models/Course');
+const uploadImage = require('../utils/uploadImage');
+const Payment = require('../models/Payment');
 
 
-// @desc    Create a new course with modules and contents
-// @route   POST /api/courses
-// @access  Private (assuming authentication is required)
-exports.createCourse = asyncHandler(async (req, res, next) => {
-    // Extract data from request body
-    const { title, price, category, photo, modules } = req.body;
 
-    // Create an array to hold module objects
-    const createdModules = [];
 
-    // Iterate over modules array and create module documents
-    for (const moduleData of modules) {
-        // Extract module data from moduleData object
-        const { title: moduleTitle, contents } = moduleData;
+//@desc     Get all courses
+// @route   GET /api/v1/courses
+// @access  Public
+const getCourses = asyncHandler(async(req, res, next) => {
+    res.status(200).json(res.advancedResults);
+ });
 
-        // Create a new module instance
-        const module = await Module.create({ title: moduleTitle });
 
-        // Create an array to hold content objects for the module
-        const createdContents = [];
+ 
+//@desc     Get single course
+// @route   GET /api/v1/course/:id
+// @access  Public
+const getCourse = asyncHandler(async(req, res, next) => {
+    const course = await Course.findById(req.params.id);
 
-        // Iterate over contents array and create content documents
-        for (const contentData of contents) {
-            // Extract content data from contentData object
-            const { title: contentTitle, video_path } = contentData;
+    if(!course){
+        return next(new ErrorResponse(`No course with the id of ${req.params.id}`, 404))
+      }
+    
 
-            // Upload the video to Vimeo-
-            const videoUri = await uploadVideo(video_path, {
-                name: contentTitle,
-                description:''
-            });
+    res.status(200).json({ success: true, data: course });
+ });
 
-            // Create a new content instance with the Vimeo video URI
-            const content = await Content.create({ title: contentTitle, file_url: videoUri, module: module._id });
-
-            // Push the created content into the array
-            createdContents.push(content._id);
-        }
-
-        // Set the contents field of the module to the array of created contents
-        module.contents = createdContents;
-
-        // Save the module document
-        await module.save();
-
-        // Push the created module into the array
-        createdModules.push(module._id);
+  //@desc   Create Course
+// @route   POST /api/v1/course
+// @access  Private/Admin
+const createCourse = asyncHandler(async(req, res, next) => {
+ 
+      // Make sure user is an admin
+      if(req.user.role !== 'admin'){
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to add courses`, 401));
     }
 
-    // Create a new course instance with the created modules
-    const course = await Course.create({
-        title,
-        price,
-        category,
-        photo,
-        modules: createdModules
+    console.log(req.files);
+
+    // upload image 
+    const photoUrl = await uploadImage(req.files.photo.tempFilePath);
+      req.body.photo = photoUrl;
+       
+  const course = await Course.create({...req.body});
+ 
+    res.status(201).json({ success: true, data: course });
+ });
+
+
+  //@desc   Update Course
+// @route   PUT /api/v1/course/:id
+// @access  Private/Admin
+const updateCourse = asyncHandler(async(req, res, next) => {
+  
+    let course = await Course.findById(req.params.id);
+
+    if(!course){
+      return next(new ErrorResponse(`No course with the id of ${req.params.id }`, 404))
+    }
+
+
+     // Make sure user is an admin
+     if(req.user.role !== 'admin'){
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to update resource ${course._id}`, 401));
+    }
+
+    course = await Course.findByIdAndUpdate(req.params.id, req.body,{
+      new: true,
+      runValidators: true
     });
 
-    // Send a success response with the created course data
-    res.status(201).json({ success: true, data: course });
-});
+    res.status(200).json({ success: true, data: course });
+ });
+
+ 
+  //@desc   Delete course
+// @route   DELETE /api/v1/course/:id
+// @access  Private/Admin
+const deleteCourse = asyncHandler(async(req, res, next) => {
+    const course = await Course.findById(req.params.id)
+ 
+    
+  if(!course){
+    return next(new ErrorResponse(`No course with the id of ${req.params.id }`, 404))
+  }
+
+     // Make sure user is an admin
+     if(req.user.role !== 'admin'){
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete resource ${course._id}`, 401));
+    }
+
+    await Course.deleteOne({ _id: req.params.id});
+ 
+    res.status(200).json({ success: true, data: {}});
+ });
+
+
+ 
+
+ module.exports = { getCourse, getCourses, createCourse, updateCourse, deleteCourse };
