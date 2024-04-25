@@ -10,7 +10,7 @@ const router = express.Router({ mergeParams: true });
 router 
   .route('/')
   .get(advancedResults(Review, {
-    path: 'resource',
+    path: 'course',
     select: 'title'
   }), getReviews)
   .post(protect, authorize('user', 'admin'), addReview);

@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const courseSchema = new mongoose.Schema(
   {
     title: {
-      type: String,
-      trim: true,
-      required: [true, "Please add a course title"],
+        type: String,
+        trim: true,
+        required: [true, 'Please add a course title']
     },
     courseDescription: {
       type: string,
@@ -16,14 +16,14 @@ const courseSchema = new mongoose.Schema(
       required: [true, "Please add a tuition cost"],
     },
     category: {
-      type: String,
-      enum: ["video", "book"],
-      required: [true, "Please add a category"],
+        type: String,
+        required: [true, "Please add a category"],
+        enum: ['pdf', 'video'],
     },
-    uploadThumbnail: {
-      type: String,
-      required: [true, "Please add an image"],
-      default: "no-photo.jpg",
+    photo: {
+        type: String,
+        required: [true, "add an image"],
+        default: 'no-photo.jpg'
     },
     draft: { type: Boolean, default: false },
     modules: [{ type: mongoose.Schema.Types.ObjectId, ref: "Module" }],
