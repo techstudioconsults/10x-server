@@ -1,12 +1,15 @@
 const mongoose = require("mongoose");
-const { moduleSchema } = require("./Module");
 
-const regularCourseSchema = new mongoose.Schema(
+const courseSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       trim: true,
       required: [true, "Please add a course title"],
+    },
+    courseDescription: {
+      type: string,
+      required: [true, "Please add a course description"],
     },
     amount: {
       type: Number,
@@ -23,7 +26,7 @@ const regularCourseSchema = new mongoose.Schema(
       default: "no-photo.jpg",
     },
     draft: { type: Boolean, default: false },
-    modules: [moduleSchema],
+    modules: [{ type: mongoose.Schema.Types.ObjectId, ref: "Module" }],
   },
   { timestamps: true }
 );
@@ -34,6 +37,10 @@ const draftCourseSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, "Please add a course title"],
+    },
+    courseDescription: {
+      type: string,
+      required: [true, "Please add a course description"],
     },
     amount: {
       type: Number,
@@ -50,12 +57,12 @@ const draftCourseSchema = new mongoose.Schema(
       default: "no-photo.jpg",
     },
     draft: { type: Boolean, default: true },
-    modules: [moduleSchema],
+    modules: [{ type: mongoose.Schema.Types.ObjectId, ref: "Module" }],
   },
   { timestamps: true }
 );
 
-const RegularCourseModel = mongoose.model("RegularCourse", regularCourseSchema);
+const CourseModel = mongoose.model("Course", courseSchema);
 const DraftedCourseModel = mongoose.model("DraftCourse", draftCourseSchema);
 
-module.exports = { RegularCourseModel, DraftedCourseModel };
+module.exports = { CourseModel, DraftedCourseModel };

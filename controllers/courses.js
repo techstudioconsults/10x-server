@@ -1,207 +1,239 @@
-const { RegularCourseModel, DraftedCourseModel } = require("../models/Course");
-const { uploadVideoToVimeo } = require("./vimeoUploader");
+const Course = require("../models/Course");
+const Module = require("../models/Module");
+const Content = require("../models/Content");
+const Joi = require("joi");
 
-// Create a regular course
-exports.createRegularCourse = async (req, res) => {
+// Joi schema for course validation
+const courseSchema = Joi.object({
+  title: Joi.string().trim().required().min(30).max(100),
+  amount: Joi.number().required(),
+  courseDescription: Joi.string().required().min(200).max(1200),
+  category: Joi.string().valid("video", "book").required(),
+  uploadThumbnail: Joi.string().required(),
+  draft: Joi.boolean().default(false),
+});
+
+// Joi schema for module validation
+const moduleSchema = Joi.object({
+  title: Joi.string().trim().required().min(30).max(100),
+  courseId: Joi.string().required(),
+});
+
+// Joi schema for content validation
+const contentSchema = Joi.object({
+  title: Joi.string().trim().required().min(30).max(100),
+  description: Joi.string().required().min(200).max(1200),
+  file_url: Joi.string().required(),
+  moduleId: Joi.string().required(),
+});
+
+// Controller functions for courses
+
+// Create a new course with modules and content
+const createCourse = async (req, res) => {
   try {
-    const courseData = req.body;
+    // Validate request body for course
+    const validatedCourseData = await courseSchema.validateAsync(req.body);
 
-    // Iterate through modules and contents to upload videos to Vimeo
-    for (const module of courseData.modules) {
-      for (const content of module.content) {
-        if (content.file_url) {
-          content.file_url = await uploadVideoToVimeo(content.file_url);
+    // Extract module and content data from the request body
+    const { modules, contents, ...courseData } = validatedCourseData;
+
+    // Validate modules and contents
+    if (modules && modules.length > 0) {
+      await Promise.all(
+        modules.map((module) => moduleSchema.validateAsync(module))
+      );
+    }
+    if (contents && contents.length > 0) {
+      await Promise.all(
+        contents.map((content) => contentSchema.validateAsync(content))
+      );
+    }
+
+    // Create course
+    const newCourse = await Course.create(courseData);
+
+    // If modules are provided, link them to the course
+    if (modules && modules.length > 0) {
+      // Create modules and link them to the course
+      const createdModules = await Promise.all(
+        modules.map(async (moduleData) => {
+          // Create module
+          const newModule = await Module.create(moduleData);
+          // Link module to course
+          newCourse.modules.push(newModule._id);
+          await newCourse.save();
+          return newModule;
+        })
+      );
+      newCourse.modules = createdModules;
+    }
+
+    // If contents are provided, link them to the modules
+    if (contents && contents.length > 0) {
+      // Iterate through each content
+      for (const contentData of contents) {
+        // Find the module to link the content
+        const module = await Module.findById(contentData.moduleId);
+        if (!module) {
+          throw new Error(`Module with ID ${contentData.moduleId} not found`);
         }
+        // Create content
+        const newContent = await Content.create(contentData);
+        // Link content to module
+        module.contents.push(newContent._id);
+        await module.save();
       }
     }
 
-    const regularCourse = new RegularCourseModel({
-      ...courseData,
-      draft: false,
-    });
-    await regularCourse.save();
-    res.status(201).json(regularCourse);
+    // Return the newly created course
+    res.status(201).json(newCourse);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create regular course" });
-    console.log(error);
+    res.status(400).json({ message: error.message });
   }
 };
 
-// Create a drafted course
-exports.createDraftedCourse = async (req, res) => {
+// Update course by ID
+const updateCourse = async (req, res) => {
   try {
-    const courseData = req.body;
+    // Validate request body for course
+    const validatedCourseData = await courseSchema.validateAsync(req.body);
 
-    // Iterate through modules and contents to upload videos to Vimeo
-    for (const module of courseData.modules) {
-      for (const content of module.content) {
-        if (content.file_url) {
-          content.file_url = await uploadVideoToVimeo(content.file_url);
+    // Extract module and content data from the request body
+    const { modules, contents, ...courseData } = validatedCourseData;
+
+    // Validate modules and contents
+    if (modules && modules.length > 0) {
+      await Promise.all(
+        modules.map((module) => moduleSchema.validateAsync(module))
+      );
+    }
+    if (contents && contents.length > 0) {
+      await Promise.all(
+        contents.map((content) => contentSchema.validateAsync(content))
+      );
+    }
+
+    // Find and update the course
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      courseData,
+      { new: true }
+    );
+    if (!updatedCourse) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Update modules if provided
+    if (modules && modules.length > 0) {
+      // Delete existing modules linked to the course
+      await Module.deleteMany({ _id: { $in: updatedCourse.modules } });
+      // Create and link new modules
+      const createdModules = await Promise.all(
+        modules.map(async (moduleData) => {
+          const newModule = await Module.create(moduleData);
+          updatedCourse.modules.push(newModule._id);
+          return newModule;
+        })
+      );
+      updatedCourse.modules = createdModules.map((module) => module._id);
+    }
+
+    // Update contents if provided
+    if (contents && contents.length > 0) {
+      // Delete existing contents linked to the course
+      await Content.deleteMany({ modelId: { $in: updatedCourse.modules } });
+      // Iterate through each content
+      for (const contentData of contents) {
+        // Find the module to link the content
+        const module = await Module.findById(contentData.moduleId);
+        if (!module) {
+          throw new Error(`Module with ID ${contentData.moduleId} not found`);
         }
+        // Create content
+        const newContent = await Content.create(contentData);
+        // Link content to module
+        module.contents.push(newContent._id);
+        await module.save();
       }
     }
 
-    const draftedCourse = new DraftedCourseModel({
-      ...courseData,
-      draft: true,
-    });
-    await draftedCourse.save();
-    res.status(201).json(draftedCourse);
+    // Save the updated course
+    const savedCourse = await updatedCourse.save();
+
+    // Return the updated course
+    res.status(200).json(savedCourse);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create drafted course" });
+    res.status(400).json({ message: error.message });
   }
 };
 
-// Update a regular course
-exports.updateRegularCourse = async (req, res) => {
+// Get all courses
+const getAllCourses = async (req, res) => {
   try {
-    const courseId = req.params.id;
-    const updatedCourse = await RegularCourseModel.findByIdAndUpdate(
-      courseId,
-      req.body,
-      { new: true }
-    );
+    const courses = await Course.find();
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-    if (!updatedCourse) {
-      return res.status(404).json({ error: "Regular course not found" });
+// Get course by ID
+const getCourseById = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete course by ID
+const deleteCourse = async (req, res) => {
+  try {
+    // Find the course
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
     }
 
-    res.json(updatedCourse);
+    // Delete modules linked to the course
+    await Module.deleteMany({ _id: { $in: course.modules } });
+
+    // Delete contents linked to the modules
+    await Content.deleteMany({ modelId: { $in: course.modules } });
+
+    // Delete the course
+    await Course.findByIdAndDelete(req.params.id);
+
+    // Return success message
+    res.status(200).json({ message: "Course deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Failed to update regular course" });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update a drafted course
-exports.updateDraftedCourse = async (req, res) => {
+// Search for courses by title (case-insensitive)
+const searchCourses = async (req, res) => {
   try {
-    const courseId = req.params.id;
-    const updatedCourse = await DraftedCourseModel.findByIdAndUpdate(
-      courseId,
-      req.body,
-      { new: true }
-    );
-
-    if (!updatedCourse) {
-      return res.status(404).json({ error: "Drafted course not found" });
-    }
-
-    res.json(updatedCourse);
+    const searchQuery = req.query.title;
+    const courses = await Course.find({
+      title: { $regex: new RegExp(searchQuery, "i") },
+    }).populate("modules");
+    res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ error: "Failed to update drafted course" });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Delete a regular course
-exports.deleteRegularCourse = async (req, res) => {
-  try {
-    const courseId = req.params.id;
-    const deletedCourse = await RegularCourseModel.findByIdAndDelete(courseId);
-    if (!deletedCourse) {
-      console.log(`Regular course with ID ${courseId} not found.`);
-      return res.status(404).json({ error: "Regular course not found" });
-    }
-
-    res.json({ message: "Regular course deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting regular course:", error);
-    res.status(500).json({ error: "Failed to delete regular course" });
-  }
-};
-
-// Delete a drafted course
-exports.deleteDraftedCourse = async (req, res) => {
-  try {
-    const courseId = req.params.id;
-    const deletedCourse = await DraftedCourseModel.findByIdAndDelete(courseId);
-    if (!deletedCourse) {
-      console.log(`Drafted course with ID ${courseId} not found.`);
-      return res.status(404).json({ error: "Drafted course not found" });
-    }
-
-    res.json({ message: "Drafted course deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting drafted course:", error);
-    res.status(500).json({ error: "Failed to delete drafted course" });
-    console.log(error);
-  }
-};
-
-// Get all regular courses
-exports.getAllRegularCourses = async (req, res) => {
-  try {
-    const regularCourses = await RegularCourseModel.find({ draft: false });
-    res.json(regularCourses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch regular courses" });
-  }
-};
-
-// Get all drafted courses
-exports.getAllDraftedCourses = async (req, res) => {
-  try {
-    const draftedCourses = await DraftedCourseModel.find();
-    res.json(draftedCourses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch drafted courses" });
-  }
-};
-
-// Search regular courses by title
-exports.searchRegularCourseByTitle = async (req, res) => {
-  try {
-    const { title } = req.query;
-    const regularCourses = await RegularCourseModel.find({
-      title: { $regex: new RegExp(title, "i") },
-      draft: false,
-    });
-    res.json(regularCourses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to search for regular courses" });
-  }
-};
-
-// Search drafted courses by title
-exports.searchDraftedCourseByTitle = async (req, res) => {
-  try {
-    const { title } = req.query;
-    const draftedCourses = await DraftedCourseModel.find({
-      title: { $regex: new RegExp(title, "i") },
-    });
-    res.json(draftedCourses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to search for drafted courses" });
-  }
-};
-
-// Find regular course by ID
-exports.findRegularCourseById = async (req, res) => {
-  try {
-    const courseId = req.params.id;
-    const regularCourse = await RegularCourseModel.findById(courseId);
-
-    if (!regularCourse || regularCourse.draft) {
-      return res.status(404).json({ error: "Regular course not found" });
-    }
-
-    res.json(regularCourse);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch regular course" });
-  }
-};
-
-// Find drafted course by ID
-exports.findDraftedCourseById = async (req, res) => {
-  try {
-    const courseId = req.params.id;
-    const draftedCourse = await DraftedCourseModel.findById(courseId);
-
-    if (!draftedCourse) {
-      return res.status(404).json({ error: "Drafted course not found" });
-    }
-
-    res.json(draftedCourse);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch drafted course" });
-  }
+module.exports = {
+  createCourse,
+  updateCourse,
+  getAllCourses,
+  getCourseById,
+  deleteCourse,
+  searchCourses,
 };

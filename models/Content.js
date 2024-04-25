@@ -1,10 +1,12 @@
+// Content schema
 const mongoose = require("mongoose");
 
 const contentSchema = new mongoose.Schema(
   {
-    // _id: mongoose.Schema.Types.ObjectId,
     title: String,
+    description: String, 
     file_url: String,
+    moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module" }, // Reference to Module model
   },
   { timestamps: true }
 );
