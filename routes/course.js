@@ -16,13 +16,13 @@ router.use('/:courseId/reviews', reviewRouter);
 router
    .route('/')
    .get(advancedResult(Course),  getCourses)
-   .post(protect, authorize('admin'), createCourse);
+   .post(protect, authorize('admin', 'super admin'), createCourse);
 
 
 router
     .route('/:id')
     .get(getCourse)
-    .put(protect, authorize('admin'), updateCourse)
-    .delete(protect, authorize('admin'), deleteCourse);
+    .put(protect, authorize('admin', 'super admin'), updateCourse)
+    .delete(protect, authorize('admin', 'super admin'), deleteCourse);
     
 module.exports = router;

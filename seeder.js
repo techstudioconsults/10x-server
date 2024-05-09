@@ -24,7 +24,7 @@ const courses = JSON.parse(fs.readFileSync(`${__dirname}/_data/courses.json`, 'u
 // Import into DB
 const importData = async() => {
     try {
-        //await User.create(users);
+        await User.create(users);
         await Course.create(courses);
         console.log('Data Imported...'.green.inverse);
         process.exit();
@@ -37,7 +37,7 @@ const importData = async() => {
 const deleteData = async() => {
     try {
         await User.deleteMany();
-        await Resource.deleteMany();
+        await Course.deleteMany();
         console.log('Data Destroyed...'.red.inverse);
         process.exit();
     } catch(err){

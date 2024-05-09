@@ -7,7 +7,7 @@ const Review = require('../models/Review');
 
 //@desc     Get Reviews
 // @route   GET /api/v1/reviews
-//@route    GET /api/v1/resources/:resourceId/reviews
+//@route    GET /api/v1/course/:courseId/reviews
 // @access  Public
 const getReviews = asyncHandler(async (req, res, next) => {
     if(req.params.courseId){
@@ -45,7 +45,7 @@ const getReview = asyncHandler(async (req, res, next) => {
  });
 
  //@desc    Add Reviews
-// @route   POST /api/v1/resources/:resourceId/reviews
+// @route   POST /api/v1/courses/:courseId/reviews
 // @access  Private
 const addReview = asyncHandler(async (req, res, next) => {
      req.body.course = req.params.courseId;

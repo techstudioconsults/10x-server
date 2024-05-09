@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema({
-    User: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -40,7 +40,19 @@ const paymentSchema = new mongoose.Schema({
     paymentDate: {
         type: Date,
         default: Date.now
-    }
+    }// Static method to get total amount
 });
+
+
+paymentSchema.statics.getTotalAmount = async function(courseId) {
+    const result = await this.aggregate([
+        { $match: { courseId: new mongoose.Types.ObjectId(courseId), status: 'success' }},
+        { $group: { _id: null, total: { $sum: '$amount' } }}
+    ]);
+
+    // result is an array with one object if there are payments, or empty if no payments were found
+    return result.length > 0 ? result[0].total : 0;
+};
+
 
 module.exports = mongoose.model("Payment", paymentSchema);

@@ -1,37 +1,35 @@
-const ErrorResponse = require('../utils/errorResponse');
-const User = require('../models/User');
-const asyncHandler = require('../middleware/async');
-const sendEmail = require('../utils/sendEmail');
-const sendTokenResponse = require('../utils/sendToken');
-const { initializePayment } = require('../services/paystack');
-const uploadImage = require('../utils/uploadImage');
-const Payment = require('../models/Payment');
-
+const ErrorResponse = require("../utils/errorResponse");
+const User = require("../models/User");
+const asyncHandler = require("../middleware/async");
+const sendEmail = require("../utils/sendEmail");
+const sendTokenResponse = require("../utils/sendToken");
+const { initializePayment } = require("../services/paystack");
+const uploadImage = require("../utils/uploadImage");
+const Payment = require("../models/Payment");
+const crypto = require("crypto");
 
 //@desc     Register user
-// @route   POST /api/v1/auth/register
-// @access  Public
-const register = asyncHandler(async(req, res, next) => {
-  const { email, password, fullname, amount, courseId} = req.body ;
+//@route    POST /api/v1/auth/register
+//@access   Public
+const register = asyncHandler(async (req, res, next) => {
+  const { email, password, fullname, amount, courseId } = req.body;
 
-  try{
-     
+  try {
     // create user
-   const user = await User.create({fullname, email, password});
-
+    const user = await User.create({ fullname, email, password });
 
     //Initiate payment with paystack
     const paymentData = await initializePayment(req);
 
-      // Create a new payment record with pending status
+    // Create a new payment record with pending status
     const payment = await Payment.create({
-      User: user._id,
+      user: user._id,
       amount,
       courseId,
       fullname,
       email,
       reference: paymentData.data.reference,
-      status: 'pending'
+      status: "pending",
     });
 
     //save the payment record
@@ -39,45 +37,54 @@ const register = asyncHandler(async(req, res, next) => {
 
     // Send token response along with the payment data
     sendTokenResponse(user, 200, res, paymentData);
-
-  }catch(error){
-    console.error('Error during registration:', error);
-    res.status(500).json({ error: 'An error occurred during registration' });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ error: "An error occurred during registration" });
   }
-
 });
 
-
 //@desc     Login user
-// @route   POST /api/v1/auth/register
-// @access  Public
+//@route    POST /api/v1/auth/login
+//@access   Public
 const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // validate email & password
   if (!email || !password) {
-    return next(new ErrorResponse("Please provide an email and password", 400));
+   return res.status(404).json({success: false, message:"Invalid Credentials"});
   }
 
   // Check for user
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return next(new ErrorResponse("Invalid credentials", 401));
+    return res.status(401).json({success: false, message:"Invalid email"});
   }
 
   // check if password matches
   const isMatch = await user.matchPassword(password);
 
   if (!isMatch) {
-    return next(new ErrorResponse("Invalid credentials", 401));
+   return res.status(404).json({success: false, message:"Invalid Password"});
   }
 
   sendTokenResponse(user, 200, res);
 });
 
+//@desc     Logout user out / clear cookie
+//@route    GET /api/v1/auth/logout
+//@access   Private
+const logout = asyncHandler(async (req, res, next) => {
+  res.cookie("token", "none", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ success: true, data: {} });
+});
+
 //@desc     Get current logged in user
-// @route   GET /api/v1/auth/me
-// @access  Private
+//@route    GET /api/v1/auth/me
+//@access   Private
 const getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
@@ -88,17 +95,16 @@ const getMe = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     Update user details
-// @route   PUT /api/v1/auth/updatedetails
-// @access  Private
+//@route    PUT /api/v1/auth/updatedetails
+//@access   Private
 const updateDetails = asyncHandler(async (req, res, next) => {
-  
-   // upload image 
+  // upload image
   const photoUrl = await uploadImage(req.files.photo.tempFilePath);
-    req.body.photo = photoUrl;
+  req.body.photo = photoUrl;
   const fieldsToUpdate = {
     fullname: req.body.fullname,
     email: req.body.email,
-    photo: req.body.photo
+    photo: req.body.photo,
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
@@ -110,8 +116,8 @@ const updateDetails = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     update password
-// @route   PUT /api/v1/auth/updatepassword
-// @access  Private
+//@route   PUT /api/v1/auth/updatepassword
+//@access  Private
 const updatePassword = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
@@ -126,8 +132,8 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     Forgot password
-// @route   POST /api/v1/auth/forgotpassword
-// @access  Private
+//@route    POST /api/v1/auth/forgotpassword
+//@access   Private
 const forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
@@ -169,8 +175,8 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     Reset password
-// @route   POST /api/v1/auth/resetpassword/:resettoken
-// @access  Private
+//@route    POST /api/v1/auth/resetpassword/:resettoken
+//@access   Private
 const resetPassword = asyncHandler(async (req, res, next) => {
   // Get hashed token
   const resetPasswordToken = crypto
@@ -196,7 +202,13 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
-
-
-
-module.exports = { register, login, getMe, updateDetails, updatePassword, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  getMe,
+  updateDetails,
+  updatePassword,
+  forgotPassword,
+  resetPassword,
+  logout,
+};

@@ -10,7 +10,7 @@ const cors = require("cors");
 const session = require("express-session");
 
 // Load env vars
-dotenv.config({ path: "./config/config.env" });
+dotenv.config({ path: "./config/.env" });
 
 // Connect to database
 connectDB();
@@ -33,6 +33,8 @@ const auth = require("./routes/auth");
 const users = require("./routes/users");
 const courses = require("./routes/course");
 const paystack = require("./routes/paystack");
+const subscribe = require("./routes/subscribe");
+
 
 
 //Body parser
@@ -64,6 +66,8 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
 app.use("/api/v1/paystack", paystack);
+app.use("/api/v1/subscribe", subscribe);
+
 
 
 const PORT = process.env.PORT || 5000;
