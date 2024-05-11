@@ -6,6 +6,7 @@ const sendTokenResponse = require('../utils/sendToken');
 const { initializePayment } = require('../services/paystack');
 const uploadImage = require('../utils/uploadImage');
 const Payment = require('../models/Payment');
+const crypto = require('crypto');
 
 
 //@desc     Register user
