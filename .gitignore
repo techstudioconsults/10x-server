@@ -1,5 +1,6 @@
 .env
 node_modules/
+.env
 _data/
 # models/Content.js
 # models/Courses.js
