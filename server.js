@@ -10,7 +10,7 @@ const cors = require("cors");
 const session = require("express-session");
 
 // Load env vars
-dotenv.config({ path: "./config/.env" });
+dotenv.config({ path: ".env" });
 
 // Connect to database
 connectDB();
