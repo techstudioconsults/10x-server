@@ -11,7 +11,7 @@ const ReviewSchema = new mongoose.Schema({
     },
     course: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Course',
+        ref: 'Resource',
         required: true
     },
     user: {
@@ -46,7 +46,7 @@ ReviewSchema.statics.getAverageRating = async function(courseId) {
     ]);
 
     try {
-        await this.model('Course').findByIdAndUpdate(resourceId, {
+        await this.model('Resource').findByIdAndUpdate(resourceId, {
             averageRating: obj[0].averageRating
         });
     } catch (error) {

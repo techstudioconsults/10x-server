@@ -20,7 +20,7 @@ const UserSchema = mongoose.Schema({
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "super admin"],
       default: "user",
     },
     photo: {
@@ -34,6 +34,12 @@ const UserSchema = mongoose.Schema({
       minlength: 6,
       select: false,
     },
+    courses:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Resource'
+      },
+    ],
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
@@ -86,4 +92,4 @@ UserSchema.methods.getResetPasswordToken = function () {
   }
 };
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model('User', UserSchema);

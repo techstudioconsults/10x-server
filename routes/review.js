@@ -13,13 +13,13 @@ router
     path: 'course',
     select: 'title'
   }), getReviews)
-  .post(protect, authorize('user', 'admin'), addReview);
+  .post(protect, authorize('user', 'admin', 'super admin'), addReview);
 
 
 router 
    .route('/:id')
    .get(getReview)
-   .put(protect, authorize('user', 'admin'), updateReview)
-   .delete(protect, authorize('user', 'admin'), deleteReview);
+   .put(protect, authorize('user', 'admin', 'super admin'), updateReview)
+   .delete(protect, authorize('user', 'admin', 'super admin'), deleteReview);
 
    module.exports = router;

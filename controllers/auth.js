@@ -1,55 +1,62 @@
-const ErrorResponse = require('../utils/errorResponse');
-const User = require('../models/User');
-const asyncHandler = require('../middleware/async');
-const sendEmail = require('../utils/sendEmail');
-const sendTokenResponse = require('../utils/sendToken');
-const { initializePayment } = require('../services/paystack');
-const uploadImage = require('../utils/uploadImage');
-const Payment = require('../models/Payment');
-const crypto = require('crypto');
-
+const ErrorResponse = require("../utils/errorResponse");
+const User = require("../models/User");
+const asyncHandler = require("../middleware/async");
+const sendEmail = require("../utils/sendEmail");
+const sendTokenResponse = require("../utils/sendToken");
+const { initializePayment } = require("../services/paystack");
+const uploadImage = require("../utils/uploadImage");
+const Payment = require("../models/Payment");
+const crypto = require("crypto");
 
 //@desc     Register user
-// @route   POST /api/v1/auth/register
-// @access  Public
-const register = asyncHandler(async(req, res, next) => {
-  const { email, password, fullname, amount, courseId} = req.body ;
+//@route    POST /api/v1/auth/register
+//@access   Public
+const register = asyncHandler(async (req, res, next) => {
+  const { email, password, fullname, amount, courseId } = req.body;
+  try {
 
-  try{
+    if (!email || !password || !fullname) {
+      return res.status(404).json({success: false, message:"Please Input all fields"});
+     }
+
      
-    // create user
-   const user = await User.create({fullname, email, password});
+     // Check for user
+   const Exisitinguser = await User.findOne({ email }).select("+password");
+      if (Exisitinguser) {
+      return res.status(401).json({success: false, message:"User Exists Already"});
+  }
 
+    // create user
+    const user = await User.create({ fullname, email, password });
 
     //Initiate payment with paystack
     const paymentData = await initializePayment(req);
 
-      // Create a new payment record with pending status
+    // Create a new payment record with pending status
     const payment = await Payment.create({
-      User: user._id,
+      user: user._id,
       amount,
       courseId,
       fullname,
       email,
       reference: paymentData.data.reference,
-      status: 'pending'
+      status: "pending",
     });
 
     //save the payment record
     await payment.save();
 
     // Send token response along with the payment data
-    sendTokenResponse(user, 200, res, paymentData);
-
-  }catch(error){
-    console.error('Error during registration:', error);
-    res.status(500).json({ error: 'An error occurred during registration' });
+    sendTokenResponse(user, 201, res, paymentData);
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ error: "An error occurred during registration" });
   }
-
 });
 
-
 //@desc     Login user
+//@route    POST /api/v1/auth/login
+//@access   Public
 //@route    POST /api/v1/auth/login
 //@access   Public
 const login = asyncHandler(async (req, res, next) => {
@@ -57,13 +64,13 @@ const login = asyncHandler(async (req, res, next) => {
 
   // validate email & password
   if (!email || !password) {
-   return res.status(404).json({success: false, message:"Invalid Credentials"});
+   return res.status(404).json({success: false, message:"Please input all field"});
   }
 
   // Check for user
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return res.status(401).json({success: false, message:"Invalid email"});
+    return res.status(401).json({success: false, message:"Email does not exist"});
   }
 
   // check if password matches
@@ -76,35 +83,41 @@ const login = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
+//@desc     Logout user out / clear cookie
+//@route    GET /api/v1/auth/logout
+//@access   Private
+const logout = asyncHandler(async (req, res, next) => {
+  res.cookie("token", "none", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ success: true, data: {} });
+});
+
 //@desc     Get current logged in user
-// @route   GET /api/v1/auth/me
-// @access  Private
+//@route    GET /api/v1/auth/me
+//@access   Private
 const getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   if (!user) {
-    return next(new ErrorResponse("User not found", 404));
+    return res.status(404).json({success: false, message: "User does not exist"});
   }
   res.status(200).json({ success: true, data: user });
 });
 
 //@desc     Update user details
-// @route   PUT /api/v1/auth/updatedetails
-// @access  Private
+//@route    PUT /api/v1/auth/updatedetails
+//@access   Private
 const updateDetails = asyncHandler(async (req, res, next) => {
-  let photoUrl = '';
-  
-  // check if photo is provided in the request
-   if(req.files && req.files.photo){
-      //uploadImage if photo is provided
-    photoUrl = await uploadImage(req.files.photo.tempFilePath);  
-   }
- 
+  // upload image
+  const photoUrl = await uploadImage(req.files.photo.tempFilePath);
+  req.body.photo = photoUrl;
   const fieldsToUpdate = {
     fullname: req.body.fullname,
     email: req.body.email,
-     // Only update the photo if a new photo is provided
-     ...(photoUrl && { photo: photoUrl })
+    photo: req.body.photo,
   };
 
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
@@ -116,14 +129,14 @@ const updateDetails = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     update password
-// @route   PUT /api/v1/auth/updatepassword
-// @access  Private
+//@route   PUT /api/v1/auth/updatepassword
+//@access  Private
 const updatePassword = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
   // Check current password
   if (!(await user.matchPassword(req.body.currentPassword))) {
-    return next(new ErrorResponse("Password is incorrect", 401));
+    return res.status(401).json({success: false, message: "Password is incorrect"});
   }
   user.password = req.body.newPassword;
   await user.save();
@@ -132,13 +145,13 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     Forgot password
-// @route   POST /api/v1/auth/forgotpassword
-// @access  Private
+//@route    POST /api/v1/auth/forgotpassword
+//@access   Private
 const forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new ErrorResponse("There is no user with that email", 404));
+   return res.status(404).json({success: false, message: "There is no user with that email"});
   }
 
   // Get reset token
@@ -169,14 +182,14 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     user.resetPasswordExpire = undefined;
 
     await user.save({ validateBeforeSave: false });
-
+    
     return next(new ErrorResponse("Email could not be sent", 500));
   }
 });
 
 //@desc     Reset password
-// @route   POST /api/v1/auth/resetpassword/:resettoken
-// @access  Private
+//@route    POST /api/v1/auth/resetpassword/:resettoken
+//@access   Private
 const resetPassword = asyncHandler(async (req, res, next) => {
   // Get hashed token
   const resetPasswordToken = crypto
@@ -190,7 +203,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   });
 
   if (!user) {
-    return next(new ErrorResponse("Invalid token", 400));
+    return res.status(400). json({success: false, message: "Invalid token"});
   }
 
   // Set new password
@@ -202,7 +215,13 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
-
-
-
-module.exports = { register, login, getMe, updateDetails, updatePassword, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  getMe,
+  updateDetails,
+  updatePassword,
+  forgotPassword,
+  resetPassword,
+  logout,
+};

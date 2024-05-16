@@ -1,27 +1,83 @@
-const User = require('../models/User'); 
+const User = require('../models/User');
+const mongoose = require("mongoose");
 const PaymentDetails = require('../models/Payment');
 const asyncHandler = require('../middleware/async');
+const sendEmail = require('../utils/sendEmail');
 
-// verify transaction using webhook
-const verifyWebhookEvent = async (req, res) => {
+//verify transaction using webhook
+const verifyWebhookEvent = asyncHandler(async (req, res) => {
       try{
         const payload = req.body;
+
+        // check for transaction success
         if(payload.event == "charge.success"){
           const { data } = payload;
+          const customerEmail = data.customer.email
 
           const customerReference = data.reference
           const fieldsToUpdate = {
             status:"success"
-          }
-          
+          }   
+
+        //update payment status
+       await PaymentDetails.findOneAndUpdate({ reference:customerReference}, fieldsToUpdate, {
+          new: true,
+          runValidators: true,
+        });
+
+          //  // Find the user by email
+          //  const user = await User.findOne({ email: customerEmail });
+          //  if (user) {
+          //   // Find the course by id
+          //   const course = await Course.findById(payment.courseId);
+
+          //   if (course) {
+          //     // Associate the course with the user
+          //     user.courses.push(course._id);
+          //     await user.save();
+          //   }
+          // }
+
+        const message = "Welcome to 10x Revenue we hope to see more of you"
+
+           sendEmail({
+             email: customerEmail,
+             subject: "Welcome to 10x",
+             message,
+           });
+
+          res.status(200).json({message: "webhook!!!!", customerReference});
+        }
+
+        // Check for transfer successful
+        if(payload.event == "transfer.success"){
+           const { data } = payload;
+
+          const customerReference = data.reference
+          const fieldsToUpdate = {
+            status:"success"
+          } 
+
         //update payment status
        await PaymentDetails.findOneAndUpdate({ reference:customerReference}, fieldsToUpdate, {
           new: true,
           runValidators: true,
         })
+
+        const message = "Hello!!!";
+
+           sendEmail({
+             email: customerEmail,
+             subject: "Welcome to 10x Revenue we hope to see more of you",
+             message,
+           });
+
           res.status(200).json({message: "webhook!!!!", customerReference});
-        }
-        if(payload.event == "transfer.failed"){
+
+         }
+
+         // check if transfer failed
+         if(payload.event == "transfer.failed"){
           const { data } = payload;
           const customerEmail = data.customer.email
       
@@ -34,33 +90,94 @@ const verifyWebhookEvent = async (req, res) => {
 
           await details.remove();
 
-          res.status(200).json({message: "Failed!!!!!", customerEmail, customerReference});
-          
+          res.status(200).json({message: "Failed!!!!", customerEmail, customerReference});
          }
        
       }catch(error){
       res.status(500).json({message: error});
     }
-    } 
+  }); 
 
-    const getCourseUsersDetails = asyncHandler(async(req, res, next) => {
-      const courseId = req.params.id;
-      const userDetails = await PaymentDetails.find({courseId: courseId})
+  
+const getCourseUsers = asyncHandler(async (req, res, next) => {
+  const courseId = req.params.id;
 
-      res.status(200).json({ success: true, count: userDetails.length, data: userDetails});
-  })
+  const userDetails = await PaymentDetails.find({ courseId: courseId, status: 'success' });
 
-  const getUserById = asyncHandler(async(req, res, next) => {
-    const payment = await PaymentDetails.findById(req.params.id).populate({
-      path: 'User',
-      select: 'fullname email '
-    }); if(!payment){
-      return next(new ErrorResponse(`No  with the id of ${req.params.id}`, 404))
+  const totalAmount = userDetails.reduce((sum, doc) => sum + doc.amount, 0);
+
+  res.status(200).json({
+    count: userDetails.length,
+    data: userDetails,
+    totalAmount,
+  });
+});
+
+
+const getCoursesPaymentStats = asyncHandler(async (req, res, next) => {
+  try {
+    const paymentStats = await PaymentDetails.aggregate([
+      { $match: { status: 'success' } }, // Filter for successful payments
+      { $group: { _id: null, totalUsers: { $sum: 1 }, totalAmount: { $sum: '$amount' } } }, // Group and calculate totals
+    ]);
+
+    if (paymentStats.length === 0) {
+      return res.status(404).json({ message: 'No payment details found' });
     }
-      
-    
-  res.status(200).json({ success: true, data: payment})
-  })
+
+    const { totalUsers, totalAmount } = paymentStats[0];
+
+    //get total courses
+    const totalCourses = await Course.find();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalAmount,
+        totalCourses: totalCourses.length
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
         
-module.exports = { verifyWebhookEvent, getCourseUsersDetails, getUserById } ;
+module.exports = { verifyWebhookEvent, getCourseUsers, getCoursesPaymentStats} ;
+
+
+
+
+
+
+
+
+
+// async function handleSuccessfulTransaction(data) {
+//     const customerReference = data.reference;
+//     const fieldsToUpdate = { status: "success" };
+
+//     // Update payment status
+//     await PaymentDetails.findOneAndUpdate({ reference: customerReference }, fieldsToUpdate, {
+//         new: true,
+//         runValidators: true,
+//     });
+// }
+
+// async function handleFailedTransaction(data) {
+//     const customerEmail = data.customer.email;
+//     const customerReference = data.reference;
+
+//     // Attempt to find and remove user details
+//     const userDetails = await User.findOne({ email: customerEmail });
+//     if (userDetails) {
+//         await userDetails.remove();
+//     }
+
+//     // Attempt to find and remove payment details
+//     const paymentDetails = await PaymentDetails.findOne({ reference: customerReference });
+//     if (paymentDetails) {
+//         await paymentDetails.remove();
+//     }
+// }
