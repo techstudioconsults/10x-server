@@ -57,6 +57,8 @@ const register = asyncHandler(async (req, res, next) => {
 //@desc     Login user
 //@route    POST /api/v1/auth/login
 //@access   Public
+//@route    POST /api/v1/auth/login
+//@access   Public
 const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -75,6 +77,7 @@ const login = asyncHandler(async (req, res, next) => {
   const isMatch = await user.matchPassword(password);
 
   if (!isMatch) {
+   return res.status(404).json({success: false, message:"Invalid Password"});
    return res.status(404).json({success: false, message:"Invalid Password"});
   }
 

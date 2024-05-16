@@ -11,6 +11,7 @@ const session = require("express-session");
 
 // Load env vars
 dotenv.config({ path: ".env" });
+dotenv.config({ path: ".env" });
 
 // Connect to database
 connectDB();
@@ -26,7 +27,7 @@ app.use(
   })
 );
 
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 
 // Route files
 const auth = require("./routes/auth");
