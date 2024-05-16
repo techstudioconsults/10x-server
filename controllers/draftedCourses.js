@@ -1,4 +1,4 @@
-const { CourseModel } = require("../models/Course");
+const { DraftedCourseModel } = require("../models/draftedCourse");
 const { ContentModel } = require("../models/Content");
 const Joi = require("joi");
 const uploadImage = require("../utils/uploadImage");
@@ -24,7 +24,7 @@ const searchSchema = Joi.object({
   keyword: Joi.string().trim().required(),
 });
 
-const createCourse = async (req, res) => {
+const createDraftCourse = async (req, res) => {
   console.log(req.body);
   console.log(req.files);
   try {
@@ -75,22 +75,22 @@ const createCourse = async (req, res) => {
       })
     );
 
-    // Set status to "published" by default
+    // Set status to "draft" by default
     const newCourse = await CourseModel.create({
       courseTitle,
       courseDescription,
       price,
       courseCategory,
       thumbnail: thumbnailUrl,
-      status: "published", // Set status to "published" by default
+      status: "draft", // Set status to "draft" by default
     });
 
-    // Create Content
+    // Create DraftedContent
     const createdContent = await ContentModel.create(
       uploadedContent.map((item) => ({ ...item, course: newCourse._id }))
     );
 
-    // Update Course with Content
+    // Update DraftedCourse with Content
     newCourse.content = createdContent.map((content) => content._id);
     await newCourse.save();
 
@@ -103,9 +103,8 @@ const createCourse = async (req, res) => {
   }
 };
 
-
 // Controller function for editing a course
-const editCourse = async (req, res) => {
+const editDraftedCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
     const { error } = courseSchema.validate(req.body);
@@ -177,9 +176,8 @@ const editCourse = async (req, res) => {
   }
 };
 
-
 // Controller function for deleting a course (and its content)
-const deleteCourse = async (req, res) => {
+const deleteDraftedCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
     const course = await CourseModel.findById(courseId);
@@ -198,9 +196,9 @@ const deleteCourse = async (req, res) => {
 };
 
 // Controller function for getting all courses
-const getAllCourses = async (req, res) => {
+const getAllDraftedCourses = async (req, res) => {
   try {
-    const courses = await CourseModel.find({ status: "published" });
+    const courses = await CourseModel.find({ status: "draft" });
     return res.json({ data: courses });
   } catch (error) {
     console.error("Error getting all courses:", error);
@@ -208,12 +206,14 @@ const getAllCourses = async (req, res) => {
   }
 };
 
-
 // Controller function for getting a single course by ID with its content
-const getCourseById = async (req, res) => {
+const getDraftedCourseById = async (req, res) => {
   const courseId = req.params.id;
   try {
-    const course = await CourseModel.findOne({ _id: courseId, status: "published" }).populate("content");
+    const course = await CourseModel.findOne({
+      _id: courseId,
+      status: "draft",
+    }).populate("content");
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
@@ -225,7 +225,7 @@ const getCourseById = async (req, res) => {
 };
 
 // Controller function for searching for courses
-const searchCourse = async (req, res) => {
+const searchDraftedCourse = async (req, res) => {
   try {
     const { error } = searchSchema.validate(req.query);
     if (error) {
@@ -235,7 +235,7 @@ const searchCourse = async (req, res) => {
     const regex = new RegExp(keyword, "i");
     const courses = await CourseModel.find({
       $and: [
-        { status: "published" },
+        { status: "draft" },
         {
           $or: [
             { courseTitle: { $regex: regex } },
@@ -251,28 +251,11 @@ const searchCourse = async (req, res) => {
   }
 };
 
-// Controller function for fetching recently uploaded courses
-const getRecentlyUploadedCourses = async (req, res) => {
-  try {
-    // Fetch recently uploaded courses by sorting based on creation timestamp in descending order
-    const courses = await CourseModel.find({ status: "published" })
-      .sort({ createdAt: -1 }) // Sort in descending order based on creation timestamp
-      .limit(3); // Limit the number of results to 3
-
-    return res.json({ data: courses });
-  } catch (error) {
-    console.error("Error getting recently uploaded courses:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-
 module.exports = {
-  createCourse,
-  editCourse,
-  deleteCourse,
-  searchCourse,
-  getAllCourses,
-  getCourseById,
-  getRecentlyUploadedCourses
+  createDraftCourse,
+  editDraftedCourse,
+  deleteDraftedCourse,
+  getAllDraftedCourses,
+  getDraftedCourseById,
+  searchDraftedCourse,
 };

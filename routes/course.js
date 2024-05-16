@@ -1,27 +1,27 @@
 const express = require("express");
 const router = express.Router();
+// const upload = require("../middleware/multer");
 const courseController = require("../controllers/courses");
 
-// Regular Courses
-router.post("/regular", courseController.createRegularCourse);
-router.put("/regular/:id", courseController.updateRegularCourse);
-router.delete("/regular/:id", courseController.deleteRegularCourse);
-router.get("/regular", courseController.getAllRegularCourses);
-router.get(
-  "/regular/search/:name",
-  courseController.searchRegularCourseByTitle
-);
-router.get("/regular/:id", courseController.findRegularCourseById);
+// Route for creating a course with content
+router.post("/courses", courseController.createCourse);
 
-// Drafted Courses
-router.post("/drafted", courseController.createDraftedCourse);
-router.put("/drafted/:id", courseController.updateDraftedCourse);
-router.delete("/drafted/:id", courseController.deleteDraftedCourse);
-router.get("/drafted", courseController.getAllDraftedCourses);
-router.get(
-  "/drafted/search/:name",
-  courseController.searchDraftedCourseByTitle
-);
-router.get("/drafted/:id", courseController.findDraftedCourseById);
+// Route for editing a course
+router.put("/courses/:id", courseController.editCourse);
+
+// Route for deleting a course
+router.delete("/courses/:id", courseController.deleteCourse);
+
+// Route for getting all courses
+router.get("/courses", courseController.getAllCourses);
+
+// Route for getting a single course by ID with its content
+router.get("/courses/:id", courseController.getCourseById);
+
+// Route for searching for courses
+router.get("/courses/search", courseController.searchCourse);
+
+//Route for getting recently uploaded courses
+router.get("/recentCourse", courseController.getRecentlyUploadedCourses)
 
 module.exports = router;

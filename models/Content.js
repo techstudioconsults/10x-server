@@ -1,12 +1,20 @@
-// Content schema
 const mongoose = require("mongoose");
 
 const contentSchema = new mongoose.Schema(
   {
-    title: String,
-    description: String, 
-    file_url: String,
-    moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module" }, // Reference to Module model
+    title: {
+      type: String,
+      required: [true, "Please add a title for the content"],
+    },
+    file_url: {
+      type: String,
+      required: [true, "Please add a file URL for the content"],
+    },
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course", // Reference to Course model
+      required: [true, "Please add a reference to the course"],
+    },
   },
   { timestamps: true }
 );
