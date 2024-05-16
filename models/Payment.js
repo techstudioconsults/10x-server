@@ -25,7 +25,7 @@ const paymentSchema = new mongoose.Schema({
     },
     courseId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Resource',
+        ref: 'Course',
         required: true
     },
     reference: {
