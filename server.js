@@ -33,6 +33,8 @@ const users = require("./routes/users");
 const courses = require("./routes/course");
 const draftedCourses = require("./routes/draftedCourse");
 const wishList = require("./routes/wishList");
+const payment = require("./routes/payment");
+const subscribe = require("./routes/subscribe");
 
 //Body parser
 app.use(express.json());
@@ -64,6 +66,8 @@ app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
 app.use("/api/v1/draftedCourse", draftedCourses);
 app.use("/api/v1/wish", wishList);
+app.use("/api/v1/payment", payment);
+app.use("/api/v1/subscribe", subscribe);
 
 const PORT = process.env.PORT || 5000;
 
