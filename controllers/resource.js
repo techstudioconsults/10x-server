@@ -1,6 +1,6 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
-const Course = require("../models/Course");
+const Course = require("../models/Resource");
 const uploadImage = require("../utils/uploadImage");
 const Payment = require("../models/Payment");
 
@@ -31,7 +31,7 @@ const getCourse = asyncHandler(async (req, res, next) => {
 //@access  Private/Admin
 const createCourse = asyncHandler(async (req, res, next) => {
   // Make sure user is an admin or super admin
-  if (req.user.role !== "admin" || req.user.role != "super admin") {
+  if (req.user.role !== "admin" && req.user.role != "super admin") {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to add courses`,

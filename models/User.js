@@ -34,6 +34,12 @@ const UserSchema = mongoose.Schema({
       minlength: 6,
       select: false,
     },
+    courses:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Resource'
+      },
+    ],
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },

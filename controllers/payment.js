@@ -1,10 +1,12 @@
-const User = require('../models/User'); 
+const User = require('../models/User');
+const Course = require('../models/Resource'); 
+const mongoose = require("mongoose");
 const PaymentDetails = require('../models/Payment');
 const asyncHandler = require('../middleware/async');
 const sendEmail = require('../utils/sendEmail');
 
 //verify transaction using webhook
-const verifyWebhookEvent = async (req, res) => {
+const verifyWebhookEvent = asyncHandler(async (req, res) => {
       try{
         const payload = req.body;
 
@@ -23,6 +25,19 @@ const verifyWebhookEvent = async (req, res) => {
           new: true,
           runValidators: true,
         });
+
+          //  // Find the user by email
+          //  const user = await User.findOne({ email: customerEmail });
+          //  if (user) {
+          //   // Find the course by id
+          //   const course = await Course.findById(payment.courseId);
+
+          //   if (course) {
+          //     // Associate the course with the user
+          //     user.courses.push(course._id);
+          //     await user.save();
+          //   }
+          // }
 
         const message = "Welcome to 10x Revenue we hope to see more of you"
 
@@ -82,47 +97,61 @@ const verifyWebhookEvent = async (req, res) => {
       }catch(error){
       res.status(500).json({message: error});
     }
-  } 
+  }); 
 
   
+const getCourseUsers = asyncHandler(async (req, res, next) => {
+  const courseId = req.params.id;
 
-  // Get payment Details of users per course
-  const getCourseUsersDetails = asyncHandler(async (req, res, next) => {
-    const courseId = req.params.id;
+  const userDetails = await PaymentDetails.find({ courseId: courseId, status: 'success' });
 
-    // Validate courseId
-    if (!courseId) {
-        return res.status(400).json({ success: false, message: "Invalid course ID" });
-    }
+  const totalAmount = userDetails.reduce((sum, doc) => sum + doc.amount, 0);
 
-    try {
-        //populate user details
-        const userDetails = await PaymentDetails.find({ courseId: courseId, status: 'success' }).populate('user').exec();
-        const totalAmount = await PaymentDetails.getTotalAmount(courseId);
-
-        // Check if data exists
-        if (userDetails.length === 0) {
-            return res.status(404).json({ success: false, message: "No payment details found for this course" });
-        }
-
-        res.status(200).json({ success: true, count: userDetails.length, data: userDetails, totalAmount: totalAmount });
-    } catch (error) {
-        next(error);
-    }
+  res.status(200).json({
+    count: userDetails.length,
+    data: userDetails,
+    totalAmount,
+  });
 });
 
 
-  const getUserById = asyncHandler(async(req, res, next) => {
-    const payment = await PaymentDetails.findById(req.params.id).populate({
-      path: 'User',
-      select: 'fullname email '
-    }); if(!payment){
-      return next(new ErrorResponse(`No  with the id of ${req.params.id}`, 404))
+const getCoursesPaymentStats = asyncHandler(async (req, res, next) => {
+  try {
+    const paymentStats = await PaymentDetails.aggregate([
+      { $match: { status: 'success' } }, // Filter for successful payments
+      { $group: { _id: null, totalUsers: { $sum: 1 }, totalAmount: { $sum: '$amount' } } }, // Group and calculate totals
+    ]);
+
+    if (paymentStats.length === 0) {
+      return res.status(404).json({ message: 'No payment details found' });
     }
-      
-    
-  res.status(200).json({ success: true, data: payment})
-  })
+
+    const { totalUsers, totalAmount } = paymentStats[0];
+
+    //get total courses
+    const totalCourses = await Course.find();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalAmount,
+        totalCourses: totalCourses.length
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+        
+module.exports = { verifyWebhookEvent, getCourseUsers, getCoursesPaymentStats} ;
+
+
+
+
+
+
 
 
 
@@ -153,8 +182,3 @@ const verifyWebhookEvent = async (req, res) => {
 //         await paymentDetails.remove();
 //     }
 // }
-
-
-
-        
-module.exports = { verifyWebhookEvent, getCourseUsersDetails, getUserById} ;

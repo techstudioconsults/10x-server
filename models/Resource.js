@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CourseSchema = new mongoose.Schema({
+const ResourceSchema = new mongoose.Schema({
     title: {
         type: String,
         trim: true,
@@ -35,4 +35,4 @@ const CourseSchema = new mongoose.Schema({
 );
 
 
-module.exports = mongoose.model('Course', CourseSchema);
+module.exports = mongoose.model('Resource', ResourceSchema);

@@ -13,8 +13,19 @@ const crypto = require("crypto");
 //@access   Public
 const register = asyncHandler(async (req, res, next) => {
   const { email, password, fullname, amount, courseId } = req.body;
-
   try {
+
+    if (!email || !password || !fullname) {
+      return res.status(404).json({success: false, message:"Please Input all fields"});
+     }
+
+     
+     // Check for user
+   const Exisitinguser = await User.findOne({ email }).select("+password");
+      if (Exisitinguser) {
+      return res.status(401).json({success: false, message:"User Exists Already"});
+  }
+
     // create user
     const user = await User.create({ fullname, email, password });
 
@@ -36,7 +47,7 @@ const register = asyncHandler(async (req, res, next) => {
     await payment.save();
 
     // Send token response along with the payment data
-    sendTokenResponse(user, 200, res, paymentData);
+    sendTokenResponse(user, 201, res, paymentData);
   } catch (error) {
     console.error("Error during registration:", error);
     res.status(500).json({ error: "An error occurred during registration" });
@@ -51,13 +62,13 @@ const login = asyncHandler(async (req, res, next) => {
 
   // validate email & password
   if (!email || !password) {
-   return res.status(404).json({success: false, message:"Invalid Credentials"});
+   return res.status(404).json({success: false, message:"Please input all field"});
   }
 
   // Check for user
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return res.status(401).json({success: false, message:"Invalid email"});
+    return res.status(401).json({success: false, message:"Email does not exist"});
   }
 
   // check if password matches
@@ -89,7 +100,7 @@ const getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   if (!user) {
-    return next(new ErrorResponse("User not found", 404));
+    return res.status(404).json({success: false, message: "User does not exist"});
   }
   res.status(200).json({ success: true, data: user });
 });
@@ -123,7 +134,7 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 
   // Check current password
   if (!(await user.matchPassword(req.body.currentPassword))) {
-    return next(new ErrorResponse("Password is incorrect", 401));
+    return res.status(401).json({success: false, message: "Password is incorrect"});
   }
   user.password = req.body.newPassword;
   await user.save();
@@ -138,7 +149,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new ErrorResponse("There is no user with that email", 404));
+   return res.status(404).json({success: false, message: "There is no user with that email"});
   }
 
   // Get reset token
@@ -169,7 +180,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     user.resetPasswordExpire = undefined;
 
     await user.save({ validateBeforeSave: false });
-
+    
     return next(new ErrorResponse("Email could not be sent", 500));
   }
 });
@@ -190,7 +201,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   });
 
   if (!user) {
-    return next(new ErrorResponse("Invalid token", 400));
+    return res.status(400). json({success: false, message: "Invalid token"});
   }
 
   // Set new password
