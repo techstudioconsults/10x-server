@@ -38,7 +38,7 @@ const deleteData = async() => {
     try {
         await User.deleteMany();
         await Resource.deleteMany();
-        console.log('Data Destroyed...'.red.inverse);
+        console.log('Data Destroyed....'.red.inverse);
         process.exit();
     } catch(err){
        console.error(err);
