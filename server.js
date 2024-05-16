@@ -26,14 +26,15 @@ app.use(
   })
 );
 
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 
 // Route files
 const auth = require("./routes/auth");
 const users = require("./routes/users");
 const courses = require("./routes/course");
+const draftedCourses = require("./routes/draftedCourse");
 const paystack = require("./routes/paystack");
-
+const wishList = require("./routes/wishList");
 
 //Body parser
 app.use(express.json());
@@ -63,8 +64,9 @@ app.use(errorHandler);
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
+app.use("/api/v1/draftedCourse", draftedCourses);
 app.use("/api/v1/paystack", paystack);
-
+app.use("/api/v1/wish", wishList);
 
 const PORT = process.env.PORT || 5000;
 

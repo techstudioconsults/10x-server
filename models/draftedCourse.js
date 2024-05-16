@@ -1,20 +1,7 @@
 const mongoose = require("mongoose");
 
-
-// Define Bookmark Schema
-const wishListSchema = new mongoose.Schema(
-  {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    course: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
-  },
-  { timestamps: true }
-);
-
-const WishListModel = mongoose.model("WishList", wishListSchema);
-
-
-// Define Course Schema
-const courseSchema = new mongoose.Schema(
+// Define Drafted Course Schema
+const draftCourseSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -41,15 +28,13 @@ const courseSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "published"],
-      default: "published",
+      default: "draft",
     },
     content: [{ type: mongoose.Schema.Types.ObjectId, ref: "Content" }],
-    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bookmark" }],
   },
   { timestamps: true }
 );
 
-const CourseModel = mongoose.model("Course", courseSchema);
+const DraftedCourseModel = mongoose.model("DraftedCourse", draftCourseSchema);
 
-module.exports = { CourseModel, WishListModel };
+module.exports = { DraftedCourseModel };
