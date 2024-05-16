@@ -1,28 +1,27 @@
-const express = require('express');
-const Course = require('../models/Course');
-const { getCourses, getCourse, createCourse, updateCourse, deleteCourse } = require('../controllers/course');
-const { protect, authorize } = require('../middleware/auth');
-const advancedResult = require('../middleware/advancedResult');
+const express = require("express");
 const router = express.Router();
+// const upload = require("../middleware/multer");
+const courseController = require("../controllers/courses");
 
+// Route for creating a course with content
+router.post("/courses", courseController.createCourse);
 
-// Include other resource routers
- const reviewRouter = require('./review');
+// Route for editing a course
+router.put("/courses/:id", courseController.editCourse);
 
- // Re-route into other routers
-router.use('/:courseId/reviews', reviewRouter);
+// Route for deleting a course
+router.delete("/courses/:id", courseController.deleteCourse);
 
+// Route for getting all courses
+router.get("/courses", courseController.getAllCourses);
 
-router
-   .route('/')
-   .get(advancedResult(Course),  getCourses)
-   .post(protect, authorize('admin'), createCourse);
+// Route for getting a single course by ID with its content
+router.get("/courses/:id", courseController.getCourseById);
 
+// Route for searching for courses
+router.get("/courses/search", courseController.searchCourse);
 
-router
-    .route('/:id')
-    .get(getCourse)
-    .put(protect, authorize('admin'), updateCourse)
-    .delete(protect, authorize('admin'), deleteCourse);
-    
+//Route for getting recently uploaded courses
+router.get("/recentCourse", courseController.getRecentlyUploadedCourses)
+
 module.exports = router;

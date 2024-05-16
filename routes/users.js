@@ -11,15 +11,15 @@ const {
 const router = express.Router();
 
 router.use(protect);
-router.use(authorize('admin'));
+
 
 router
    .route('/')
-   .get(advancedResult(User),  getUsers);
+   .get(advancedResult(User), authorize('admin'),  getUsers);
 
 router
     .route('/:id')
-    .get(getUser)
-    .delete(deleteUser);
+    .get(authorize('admin'), getUser)
+    .delete(authorize('admin', 'user'), deleteUser);
     
 module.exports = router;
