@@ -5,16 +5,16 @@ const uploadImage = require("../utils/uploadImage");
 const uploadVideo = require("../utils/uploadVideo");
 
 const courseSchema = Joi.object({
-  courseTitle: Joi.string().trim().required(),
-  courseDescription: Joi.string().required(),
+  title: Joi.string().trim().required(),
+  description: Joi.string().required(),
   price: Joi.number().required(),
-  courseCategory: Joi.string().valid("video", "book").required(),
+  category: Joi.string().valid("video", "book").required(),
   thumbnail: Joi.string(),
   content: Joi.array()
     .items(
       Joi.object({
         title: Joi.string().required(),
-        file_url: Joi.string().required(),
+        file: Joi.string().required(),
       })
     )
     .required(),
@@ -33,14 +33,8 @@ const createDraftCourse = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const {
-      courseTitle,
-      courseDescription,
-      price,
-      courseCategory,
-      thumbnail,
-      content,
-    } = req.body;
+    const { title, description, price, category, thumbnail, content } =
+      req.body;
 
     let thumbnailUrl;
     if (thumbnail && thumbnail.startsWith("http")) {
@@ -60,9 +54,9 @@ const createDraftCourse = async (req, res) => {
     const uploadedContent = await Promise.all(
       content.map(async (item) => {
         let fileUrl;
-        if (item.file_url && item.file_url.startsWith("http")) {
-          // If file_url is provided as an HTTP link
-          fileUrl = await uploadVideo(item.file_url);
+        if (item.file && item.file.startsWith("http")) {
+          // If file is provided as an HTTP link
+          fileUrl = await uploadVideo(item.file);
         } else if (item.file_path) {
           // If file_path is provided
           fileUrl = await uploadVideo(item.file_path);
@@ -71,16 +65,16 @@ const createDraftCourse = async (req, res) => {
             .status(400)
             .json({ error: `File URL or path not provided for ${item.title}` });
         }
-        return { title: item.title, file_url: fileUrl };
+        return { title: item.title, file: fileUrl };
       })
     );
 
     // Set status to "draft" by default
-    const newCourse = await CourseModel.create({
-      courseTitle,
-      courseDescription,
+    const newCourse = await DraftedCourseModel.create({
+      title,
+      description,
       price,
-      courseCategory,
+      category,
       thumbnail: thumbnailUrl,
       status: "draft", // Set status to "draft" by default
     });
@@ -112,16 +106,16 @@ const editDraftedCourse = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const course = await CourseModel.findById(courseId);
+    const course = await DraftedCourseModel.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
 
     const {
-      courseTitle,
-      courseDescription,
+      title,
+      description,
       price,
-      courseCategory,
+      category,
       thumbnail,
       content,
       status, // Include status in the request body
@@ -140,13 +134,13 @@ const editDraftedCourse = async (req, res) => {
 
     const uploadedContent = await Promise.all(
       content.map(async (item) => {
-        let fileUrl = item.file_url;
-        if (item.file_url && item.file_url.startsWith("http")) {
-          fileUrl = await uploadVideo(item.file_url);
+        let fileUrl = item.file;
+        if (item.file && item.file.startsWith("http")) {
+          fileUrl = await uploadVideo(item.file);
         } else if (item.file_path) {
           fileUrl = await uploadVideo(item.file_path);
         }
-        return { title: item.title, file_url: fileUrl };
+        return { title: item.title, file: fileUrl };
       })
     );
 
@@ -160,10 +154,10 @@ const editDraftedCourse = async (req, res) => {
       course.status = status;
     }
 
-    course.courseTitle = courseTitle || course.courseTitle;
-    course.courseDescription = courseDescription || course.courseDescription;
+    course.title = title || course.title;
+    course.description = description || course.description;
     course.price = price || course.price;
-    course.courseCategory = courseCategory || course.courseCategory;
+    course.category = category || course.category;
     course.thumbnail = thumbnailUrl;
 
     course.content = createdContent.map((content) => content._id);
@@ -180,13 +174,13 @@ const editDraftedCourse = async (req, res) => {
 const deleteDraftedCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
-    const course = await CourseModel.findById(courseId);
+    const course = await DraftedCourseModel.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
 
     await ContentModel.deleteMany({ course: courseId });
-    await CourseModel.findByIdAndDelete(courseId);
+    await DraftedCourseModel.findByIdAndDelete(courseId);
 
     return res.json({ message: "Course and its content deleted successfully" });
   } catch (error) {
@@ -198,7 +192,7 @@ const deleteDraftedCourse = async (req, res) => {
 // Controller function for getting all courses
 const getAllDraftedCourses = async (req, res) => {
   try {
-    const courses = await CourseModel.find({ status: "draft" });
+    const courses = await DraftedCourseModel.find({ status: "draft" });
     return res.json({ data: courses });
   } catch (error) {
     console.error("Error getting all courses:", error);
@@ -210,7 +204,7 @@ const getAllDraftedCourses = async (req, res) => {
 const getDraftedCourseById = async (req, res) => {
   const courseId = req.params.id;
   try {
-    const course = await CourseModel.findOne({
+    const course = await DraftedCourseModel.findOne({
       _id: courseId,
       status: "draft",
     }).populate("content");
@@ -233,13 +227,13 @@ const searchDraftedCourse = async (req, res) => {
     }
     const { keyword } = req.query;
     const regex = new RegExp(keyword, "i");
-    const courses = await CourseModel.find({
+    const courses = await DraftedCourseModel.find({
       $and: [
         { status: "draft" },
         {
           $or: [
-            { courseTitle: { $regex: regex } },
-            { courseDescription: { $regex: regex } },
+            { title: { $regex: regex } },
+            { description: { $regex: regex } },
           ],
         },
       ],

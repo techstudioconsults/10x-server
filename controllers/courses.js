@@ -5,16 +5,16 @@ const uploadImage = require("../utils/uploadImage");
 const uploadVideo = require("../utils/uploadVideo");
 
 const courseSchema = Joi.object({
-  courseTitle: Joi.string().trim().required(),
-  courseDescription: Joi.string().required(),
+  title: Joi.string().trim().required(),
+  description: Joi.string().required(),
   price: Joi.number().required(),
-  courseCategory: Joi.string().valid("video", "book").required(),
+  category: Joi.string().valid("video", "book").required(),
   thumbnail: Joi.string(),
   content: Joi.array()
     .items(
       Joi.object({
         title: Joi.string().required(),
-        file_url: Joi.string().required(),
+        file: Joi.string().required(),
       })
     )
     .required(),
@@ -33,14 +33,8 @@ const createCourse = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const {
-      courseTitle,
-      courseDescription,
-      price,
-      courseCategory,
-      thumbnail,
-      content,
-    } = req.body;
+    const { title, description, price, category, thumbnail, content } =
+      req.body;
 
     let thumbnailUrl;
     if (thumbnail && thumbnail.startsWith("http")) {
@@ -60,9 +54,9 @@ const createCourse = async (req, res) => {
     const uploadedContent = await Promise.all(
       content.map(async (item) => {
         let fileUrl;
-        if (item.file_url && item.file_url.startsWith("http")) {
-          // If file_url is provided as an HTTP link
-          fileUrl = await uploadVideo(item.file_url);
+        if (item.file && item.file.startsWith("http")) {
+          // If file is provided as an HTTP link
+          fileUrl = await uploadVideo(item.file);
         } else if (item.file_path) {
           // If file_path is provided
           fileUrl = await uploadVideo(item.file_path);
@@ -71,16 +65,16 @@ const createCourse = async (req, res) => {
             .status(400)
             .json({ error: `File URL or path not provided for ${item.title}` });
         }
-        return { title: item.title, file_url: fileUrl };
+        return { title: item.title, file: fileUrl };
       })
     );
 
     // Set status to "published" by default
     const newCourse = await CourseModel.create({
-      courseTitle,
-      courseDescription,
+      title,
+      description,
       price,
-      courseCategory,
+      category,
       thumbnail: thumbnailUrl,
       status: "published", // Set status to "published" by default
     });
@@ -103,7 +97,6 @@ const createCourse = async (req, res) => {
   }
 };
 
-
 // Controller function for editing a course
 const editCourse = async (req, res) => {
   const courseId = req.params.id;
@@ -119,10 +112,10 @@ const editCourse = async (req, res) => {
     }
 
     const {
-      courseTitle,
-      courseDescription,
+      title,
+      description,
       price,
-      courseCategory,
+      category,
       thumbnail,
       content,
       status, // Include status in the request body
@@ -141,13 +134,13 @@ const editCourse = async (req, res) => {
 
     const uploadedContent = await Promise.all(
       content.map(async (item) => {
-        let fileUrl = item.file_url;
-        if (item.file_url && item.file_url.startsWith("http")) {
-          fileUrl = await uploadVideo(item.file_url);
+        let fileUrl = item.file;
+        if (item.file && item.file.startsWith("http")) {
+          fileUrl = await uploadVideo(item.file);
         } else if (item.file_path) {
           fileUrl = await uploadVideo(item.file_path);
         }
-        return { title: item.title, file_url: fileUrl };
+        return { title: item.title, file: fileUrl };
       })
     );
 
@@ -161,10 +154,10 @@ const editCourse = async (req, res) => {
       course.status = status;
     }
 
-    course.courseTitle = courseTitle || course.courseTitle;
-    course.courseDescription = courseDescription || course.courseDescription;
+    course.title = title || course.title;
+    course.description = description || course.description;
     course.price = price || course.price;
-    course.courseCategory = courseCategory || course.courseCategory;
+    course.category = category || course.category;
     course.thumbnail = thumbnailUrl;
 
     course.content = createdContent.map((content) => content._id);
@@ -176,7 +169,6 @@ const editCourse = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 // Controller function for deleting a course (and its content)
 const deleteCourse = async (req, res) => {
@@ -208,12 +200,14 @@ const getAllCourses = async (req, res) => {
   }
 };
 
-
 // Controller function for getting a single course by ID with its content
 const getCourseById = async (req, res) => {
   const courseId = req.params.id;
   try {
-    const course = await CourseModel.findOne({ _id: courseId, status: "published" }).populate("content");
+    const course = await CourseModel.findOne({
+      _id: courseId,
+      status: "published",
+    }).populate("content");
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
@@ -238,8 +232,8 @@ const searchCourse = async (req, res) => {
         { status: "published" },
         {
           $or: [
-            { courseTitle: { $regex: regex } },
-            { courseDescription: { $regex: regex } },
+            { title: { $regex: regex } },
+            { description: { $regex: regex } },
           ],
         },
       ],
@@ -266,7 +260,6 @@ const getRecentlyUploadedCourses = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createCourse,
   editCourse,
@@ -274,5 +267,5 @@ module.exports = {
   searchCourse,
   getAllCourses,
   getCourseById,
-  getRecentlyUploadedCourses
+  getRecentlyUploadedCourses,
 };

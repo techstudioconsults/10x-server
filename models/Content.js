@@ -6,7 +6,7 @@ const contentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please add a title for the content"],
     },
-    file_url: {
+    file: {
       type: String,
       required: [true, "Please add a file URL for the content"],
     },

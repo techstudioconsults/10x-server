@@ -16,12 +16,12 @@ const WishListModel = mongoose.model("WishList", wishListSchema);
 // Define Course Schema
 const courseSchema = new mongoose.Schema(
   {
-    courseTitle: {
+    title: {
       type: String,
       trim: true,
       required: [true, "Please add a course title"],
     },
-    courseDescription: {
+    description: {
       type: String,
       required: [true, "Please add a course description"],
     },
@@ -29,7 +29,7 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please add a tuition cost"],
     },
-    courseCategory: {
+    category: {
       type: String,
       enum: ["video", "book"],
       required: [true, "Please add a category"],
