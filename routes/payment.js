@@ -4,17 +4,18 @@ const whitelistIP = require('../middleware/whitelist');
 const verifySignature = require('../middleware/verifySignature');
 
 const { verifyWebhookEvent, getCourseUsers, getCoursesPaymentStats } = require('../controllers/payment');
+const { authorize } = require('../middleware/auth');
 
 const router = express.Router({ mergeParams: true });
 
 router
      .post('/', initializePayment)
      .post('/webhook', whitelistIP, verifySignature, verifyWebhookEvent)
-     .get('/total-earnings', getCoursesPaymentStats);
+     .get('/total-earnings', authorize('admin', 'super admin'), getCoursesPaymentStats);
 
  router
     .route('/:id')
-    .get(getCourseUsers)
+    .get(authorize('admin', 'super admin'), getCourseUsers)
 
 module.exports = router;
 

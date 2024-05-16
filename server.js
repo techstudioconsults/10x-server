@@ -32,8 +32,7 @@ app.set("trust proxy", true);
 // Route files
 const auth = require("./routes/auth");
 const users = require("./routes/users");
-const courses = require("./routes/resource");
-const paystack = require("./routes/payment");
+const payment = require("./routes/payment");
 const subscribe = require("./routes/subscribe");
 
 
@@ -65,8 +64,7 @@ app.use(errorHandler);
 // Mount routers
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
-app.use("/api/v1/course", courses);
-app.use("/api/v1/payment", paystack);
+app.use("/api/v1/payment", payment);
 app.use("/api/v1/subscribe", subscribe);
 
 

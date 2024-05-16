@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Course = require('../models/Resource'); 
 const mongoose = require("mongoose");
 const PaymentDetails = require('../models/Payment');
 const asyncHandler = require('../middleware/async');
