@@ -78,7 +78,6 @@ const login = asyncHandler(async (req, res, next) => {
 
   if (!isMatch) {
    return res.status(404).json({success: false, message:"Invalid Password"});
-   return res.status(404).json({success: false, message:"Invalid Password"});
   }
 
   sendTokenResponse(user, 200, res);
