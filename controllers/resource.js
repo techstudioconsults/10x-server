@@ -2,7 +2,7 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const Course = require("../models/Resource");
 const uploadImage = require("../utils/uploadImage");
-const Payment = require("../models/Payment");
+
 
 //@desc     Get all courses
 //@route    GET /api/v1/courses

@@ -1,4 +1,3 @@
-// require('dotenv').config();
 const axios = require('axios');
 const crypto = require('crypto');
 const ErrorResponse = require('../utils/errorResponse');
