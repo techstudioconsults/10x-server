@@ -27,7 +27,15 @@ const searchSchema = Joi.object({
 const createCourse = async (req, res) => {
   console.log(req.body);
   console.log(req.files);
+
   try {
+    // Make sure user is an admin
+    if (req.user.role !== "admin" && req.user.role !== "super admin") {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to add course`,
+      });
+    }
     const { error } = courseSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
@@ -101,6 +109,15 @@ const createCourse = async (req, res) => {
 const editCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
+    // Make sure user is an admin
+    if (req.user.role !== "admin" || req.user.role !== "super admin") {
+      return next(
+        new ErrorResponse(
+          `User ${req.user.id} is not authorized to add courses`,
+          401
+        )
+      );
+    }
     const { error } = courseSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
@@ -174,6 +191,15 @@ const editCourse = async (req, res) => {
 const deleteCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
+    // Make sure user is an admin
+    if (req.user.role !== "admin" || req.user.role !== "super admin") {
+      return next(
+        new ErrorResponse(
+          `User ${req.user.id} is not authorized to add courses`,
+          401
+        )
+      );
+    }
     const course = await CourseModel.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });

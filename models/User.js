@@ -37,7 +37,7 @@ const UserSchema = mongoose.Schema({
     courses:[
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Resource'
+        ref: 'Course'
       },
     ],
     resetPasswordToken: String,
