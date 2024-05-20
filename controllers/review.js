@@ -1,6 +1,6 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
-const Course = require('../models/Course');
+const {CourseModel} = require('../models/Course');
 const Review = require('../models/Review');
 
 
@@ -51,7 +51,7 @@ const addReview = asyncHandler(async (req, res, next) => {
      req.body.course = req.params.courseId;
      req.body.user = req.user.id;
 
-     const course = await Course.findById(req.params.courseId);
+     const course = await CourseModel.findById(req.params.courseId);
 
      if(!course){
         return next(new ErrorResponse(`No course with the id of ${req.params.courseId}`, 404))

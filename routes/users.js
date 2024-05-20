@@ -10,11 +10,11 @@ router.use(protect);
 
 router
   .route("/")
-  .get(advancedResult(User), authorize("admin", "super admin"), getUsers);
+  .get(advancedResult(User), protect, authorize("admin", "super admin"), getUsers);
 
 router
   .route("/:id")
-  .get(authorize("admin", "super admin"), getUser)
+  .get(protect, authorize("admin", "super admin"), getUser)
   .delete(protect, authorize("admin", "user", "super admin"), deleteUser);
 
 module.exports = router;

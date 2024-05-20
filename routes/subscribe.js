@@ -7,7 +7,7 @@ const { createSubcribers, unsubscribe, sendMailToSubscribers } = require('../con
 const router = express.Router();
 
 router.post('/createsubscriber', createSubcribers);
-router.post('/sendmail', authorize('admin', 'super admin'), sendMailToSubscribers);
+router.post('/sendmail', protect, authorize('admin', 'super admin'), sendMailToSubscribers);
 router.delete('/unsubscriber', unsubscribe);
 
 

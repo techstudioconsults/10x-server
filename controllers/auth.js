@@ -111,23 +111,29 @@ const getMe = asyncHandler(async (req, res, next) => {
 //@route    PUT /api/v1/auth/updatedetails
 //@access   Private
 const updateDetails = asyncHandler(async (req, res, next) => {
-  // upload image
-  const photoUrl = await uploadImage(req.files.photo.tempFilePath);
-  req.body.photo = photoUrl;
   const fieldsToUpdate = {
     fullname: req.body.fullname,
     email: req.body.email,
-    photo: req.body.photo,
   };
 
-  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-    new: true,
-    runValidators: true,
-  });
+  // Check if a photo is provided in the request
+  if (req.files && req.files.photo) {
+    // Upload the image and get the photo URL
+    const photoUrl = await uploadImage(req.files.photo.tempFilePath);
+    fieldsToUpdate.photo = photoUrl;
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    fieldsToUpdate,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   res.status(200).json({ success: true, data: user });
 });
-
 //@desc     update password
 //@route   PUT /api/v1/auth/updatepassword
 //@access  Private
