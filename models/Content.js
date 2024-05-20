@@ -15,6 +15,11 @@ const contentSchema = new mongoose.Schema(
       ref: "Course", // Reference to Course model
       required: [true, "Please add a reference to the course"],
     },
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DraftedCourse", // Reference to Course model
+      required: [true, "Please add a reference to the course"],
+    },
   },
   { timestamps: true }
 );

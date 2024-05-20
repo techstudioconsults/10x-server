@@ -6,7 +6,7 @@ const { authorize, protect } = require("../middleware/auth");
 
 // Route for creating a course with content
 router.post(
-  "/courses",
+  "/",
   protect,
   authorize("admin", "super admin"),
   courseController.createCourse
@@ -14,7 +14,7 @@ router.post(
 
 // Route for editing a course
 router.put(
-  "/courses/:id",
+  "/:id",
   protect,
   authorize("admin", "super admin"),
   courseController.editCourse
@@ -22,20 +22,20 @@ router.put(
 
 // Route for deleting a course
 router.delete(
-  "/courses/:id",
+  "/:id",
   protect,
   authorize("admin", "super admin"),
   courseController.deleteCourse
 );
 
 // Route for getting all courses
-router.get("/courses", courseController.getAllCourses);
+router.get("/", courseController.getAllCourses);
 
 // Route for getting a single course by ID with its content
-router.get("/courses/:id", courseController.getCourseById);
+router.get("/:id", courseController.getCourseById);
 
 // Route for searching for courses
-router.get("/courses/search", courseController.searchCourse);
+router.get("/search/:keyword", courseController.searchCourse);
 
 //Route for getting recently uploaded courses
 router.get("/recentCourse", courseController.getRecentlyUploadedCourses);

@@ -28,6 +28,16 @@ const createDraftCourse = async (req, res) => {
   console.log(req.body);
   console.log(req.files);
   try {
+    console.log(DraftedCourseModel); // Add this line
+    console.log(ContentModel); // Add this line
+
+    // Make sure user is an admin
+    if (req.user.role !== "admin" && req.user.role !== "super admin") {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to add course`,
+      });
+    }
     const { error } = courseSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
@@ -101,6 +111,13 @@ const createDraftCourse = async (req, res) => {
 const editDraftedCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
+    // Make sure user is an admin
+    if (req.user.role !== "admin" && req.user.role !== "super admin") {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to add course`,
+      });
+    }
     const { error } = courseSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
@@ -174,6 +191,13 @@ const editDraftedCourse = async (req, res) => {
 const deleteDraftedCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
+    // Make sure user is an admin
+    if (req.user.role !== "admin" && req.user.role !== "super admin") {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to add course`,
+      });
+    }
     const course = await DraftedCourseModel.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
@@ -221,25 +245,28 @@ const getDraftedCourseById = async (req, res) => {
 // Controller function for searching for courses
 const searchDraftedCourse = async (req, res) => {
   try {
-    const { error } = searchSchema.validate(req.query);
+    // Extract the keyword from the URL parameters
+    const { keyword } = req.params;
+
+    // Validate the keyword if necessary (e.g., length, content)
+    const { error } = searchSchema.validate({ keyword });
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
-    const { keyword } = req.query;
+
+    // Create a case-insensitive regex from the keyword
     const regex = new RegExp(keyword, "i");
+
+    // Search for courses with the status 'published' and match title or description
     const courses = await DraftedCourseModel.find({
-      $and: [
-        { status: "draft" },
-        {
-          $or: [
-            { title: { $regex: regex } },
-            { description: { $regex: regex } },
-          ],
-        },
-      ],
+      status: "draft",
+      $or: [{ title: { $regex: regex } }, { description: { $regex: regex } }],
     });
+
+    // Return the found courses
     return res.json({ data: courses });
   } catch (error) {
+    // Log the error and return a 500 status
     console.error("Error searching courses:", error);
     return res.status(500).json({ error: "Internal server error" });
   }

@@ -35,5 +35,6 @@ const draftCourseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const DraftedCourseModel = mongoose.model("DraftedCourse", draftCourseSchema);
 
-module.exports = mongoose.model("DraftedCourse", draftCourseSchema);
+module.exports = { DraftedCourseModel };
