@@ -29,6 +29,8 @@ router.delete(
 );
 
 // Route for getting all courses
+router.get("/recentCourse", courseController.getRecentlyUploadedCourses);
+
 router.get("/", courseController.getAllCourses);
 
 // Route for getting a single course by ID with its content
@@ -38,6 +40,5 @@ router.get("/:id", courseController.getCourseById);
 router.get("/search/:keyword", courseController.searchCourse);
 
 //Route for getting recently uploaded courses
-router.get("/recentCourse", courseController.getRecentlyUploadedCourses);
 
 module.exports = router;
