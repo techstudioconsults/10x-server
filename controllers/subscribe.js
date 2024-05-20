@@ -1,7 +1,8 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Subscriber = require('../models/Subscribers');
-const sendEmail = require('../utils/sendEmail');
+// const sendEmail = require('../utils/sendEmail');
+const {mailSubscription} = require('../utils/mailing');
 
 
 //@desc     create subscribers
@@ -24,6 +25,15 @@ const createSubcribers = asyncHandler(async(req, res, next) => {
     // Create a new subscriber
     const newSubscriber = await Subscriber.create({email});
 
+       // Prepare email template data
+       const templateData = {
+        email : req.body.email
+      };
+
+
+   await mailSubscription({  email: templateData.email });
+
+   
     return res.status(201).json({message: 'Subscription successful', newSubscriber });
 });
 
