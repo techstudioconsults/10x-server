@@ -258,10 +258,7 @@ const searchCourse = async (req, res) => {
     // Search for courses with the status 'published' and match title or description
     const courses = await CourseModel.find({
       status: "published",
-      $or: [
-        { title: { $regex: regex } },
-        { description: { $regex: regex } }
-      ]
+      $or: [{ title: { $regex: regex } }, { description: { $regex: regex } }],
     });
 
     // Return the found courses
@@ -272,7 +269,6 @@ const searchCourse = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 // Controller function for fetching recently uploaded courses
 const getRecentlyUploadedCourses = async (req, res) => {

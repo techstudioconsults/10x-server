@@ -7,13 +7,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRETS,
 });
 
-const uploadVideo = async (filePath) => {
+const uploadVideo = async (filePath, resourceType = "auto") => {
   try {
     const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_large(
+      cloudinary.uploader.upload(
         filePath,
         {
-          resource_type: "video", // Auto-detect the resource type
+          resource_type: resourceType,
+          type: "authenticated",
         },
         (error, result) => {
           if (error) {
