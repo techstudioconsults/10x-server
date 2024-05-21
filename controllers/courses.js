@@ -9,19 +9,15 @@ const courseSchema = Joi.object({
   description: Joi.string().required(),
   price: Joi.number().required(),
   category: Joi.string().valid("video", "book").required(),
-  thumbnail: Joi.string(),
+  thumbnail: Joi.string().required(),
   content: Joi.array()
     .items(
       Joi.object({
         title: Joi.string().required(),
-        file: Joi.string().required(),
+        file: Joi.string().required(), // Expecting 'file' instead of 'fileName'
       })
     )
     .required(),
-});
-
-const searchSchema = Joi.object({
-  keyword: Joi.string().trim().required(),
 });
 
 const createCourse = async (req, res) => {
@@ -36,42 +32,42 @@ const createCourse = async (req, res) => {
         message: `User ${req.user.id} is not authorized to add course`,
       });
     }
+
+    // Validate request body
     const { error } = courseSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { title, description, price, category, thumbnail, content } =
-      req.body;
+    const { title, description, price, category, thumbnail, content } = req.body;
 
+    // Handle thumbnail upload or URL
     let thumbnailUrl;
-    if (thumbnail && thumbnail.startsWith("http")) {
+    if (thumbnail.startsWith("http")) {
       // If thumbnail is provided as an HTTP link
-      thumbnailUrl = await uploadImage(thumbnail);
-    } else if (
-      req.files &&
-      req.files.thumbnail &&
-      req.files.thumbnail.tempFilePath
-    ) {
+      thumbnailUrl = thumbnail; // No need to upload, use the URL directly
+    } else if (req.files && req.files.thumbnail) {
       // If thumbnail is uploaded as a file
       thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
     } else {
-      return res.status(400).json({ error: "Thumbnail file not provided" });
+      return res.status(400).json({ error: "Thumbnail file or URL not provided" });
     }
 
+    // Handle content uploads or URLs
     const uploadedContent = await Promise.all(
       content.map(async (item) => {
         let fileUrl;
-        if (item.file && item.file.startsWith("http")) {
+        if (!item.file) {
+          throw new Error(`File not provided for ${item.title}`);
+        }
+        if (item.file.startsWith("http")) {
           // If file is provided as an HTTP link
-          fileUrl = await uploadVideo(item.file);
-        } else if (item.file_path) {
-          // If file_path is provided
-          fileUrl = await uploadVideo(item.file_path);
+          fileUrl = item.file;
+        } else if (req.files && req.files[item.file]) {
+          // If file is uploaded
+          fileUrl = await uploadVideo(req.files[item.file].tempFilePath);
         } else {
-          return res
-            .status(400)
-            .json({ error: `File URL or path not provided for ${item.title}` });
+          throw new Error(`File not provided for ${item.title}`);
         }
         return { title: item.title, file: fileUrl };
       })
@@ -84,7 +80,7 @@ const createCourse = async (req, res) => {
       price,
       category,
       thumbnail: thumbnailUrl,
-      status: "published", // Set status to "published" by default
+      status: "published",
     });
 
     // Create Content
@@ -96,14 +92,13 @@ const createCourse = async (req, res) => {
     newCourse.content = createdContent.map((content) => content._id);
     await newCourse.save();
 
-    return res
-      .status(201)
-      .json({ message: "Course created successfully", data: newCourse });
+    return res.status(201).json({ message: "Course created successfully", data: newCourse });
   } catch (error) {
     console.error("Error creating course with content:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // Controller function for editing a course
 const editCourse = async (req, res) => {

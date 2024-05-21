@@ -28,6 +28,28 @@ app.use(
 
 app.set("trust proxy", true);
 
+// Middleware setup
+app.use(express.json()); // Body parser
+app.use(cors()); // CORS setup
+app.use(cookieParser()); // Cookie parser
+
+// Dev logging middleware
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+// File upload middleware
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
+
+// Error handler middleware
+app.use(errorHandler);
+
+// Mount routers
 const auth = require("./routes/auth");
 const users = require("./routes/users");
 const courses = require("./routes/course");
@@ -36,31 +58,6 @@ const wishList = require("./routes/wishList");
 const payment = require("./routes/payment");
 const subscribe = require("./routes/subscribe");
 
-//Body parser
-app.use(express.json());
-
-//cors setup
-app.use(cors());
-
-// file upload
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-  })
-);
-
-//Cookie parser
-app.use(cookieParser());
-
-// Dev logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
-app.use(errorHandler);
-
-// Mount routers
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
