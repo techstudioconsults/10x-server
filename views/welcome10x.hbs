@@ -1,10 +1,18 @@
 <div
-  style="background-color:blue; display: grid; grid-template-column: 1fr  grid-gap:0.5rem;  width:80%; max-width:34rem;  margin:auto; "
+  style="
+        background-color: blue;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-gap: 0.5rem;
+        width: 80%;
+        max-width: 34rem;
+        margin: auto;
+      "
 >
   <div
     style="
           display: grid;
-          grid-template-column: 1fr;
+          grid-template-columns: 1fr;
           place-items: center;
           width: 100%;
           max-width: 32rem;
@@ -33,30 +41,32 @@
   <div
     style="
           display: grid;
-          grid-template-column: 1fr;
+          grid-template-columns: 1fr;
           background-color: #ffff;
           color: black;
           max-width: 36rem;
           margin: auto;
         "
   >
-    <h1 style="text-align: center; max-width: 34rem">
-      {{fullname}}! Welcome to 10X Revenue Growth
-    </h1>
-    <p style="max-width: 34rem">Dear {{fullname}},</p>
-    <p style="max-width: 34rem">
-      Lorem ipsum dolor sit amet consectetur. Tempus non vitae morbi
-      pellentesque eu duis purus blandit. Ultrices nec vestibulum egestas mauris
-      id feugiat in luctus. Porttitor amet risus ac etiam odio.
-    </p>
-    <p style="max-width: 34rem">
-      Sociis ac sed vestibulum vulputate eget fringilla. Massa in ac elit et
-      eget.
-    </p>
+    <div style="max-width: 34rem; margin: auto">
+      <h1 style="text-align: center">
+        {{fullname}}! Welcome to 10X Revenue Growth
+      </h1>
+      <p>Dear {{fullname}},</p>
+      <p>
+        Lorem ipsum dolor sit amet consectetur. Tempus non vitae morbi
+        pellentesque eu duis purus blandit. Ultrices nec vestibulum egestas
+        mauris id feugiat in luctus. Porttitor amet risus ac etiam odio.
+      </p>
+      <p>
+        Sociis ac sed vestibulum vulputate eget fringilla. Massa in ac elit et
+        eget.
+      </p>
+    </div>
     <div
       style="
             display: grid;
-            grid-template-column: 1fr;
+            grid-template-columns: 1fr;
             place-items: center;
             width: 100%;
             max-width: 32rem;
@@ -78,7 +88,8 @@
               "
         >
           Go to Home
-        </button></a>
+        </button>
+      </a>
     </div>
   </div>
 </div>
