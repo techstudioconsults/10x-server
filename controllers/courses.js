@@ -20,6 +20,10 @@ const courseSchema = Joi.object({
     .required(),
 });
 
+const searchSchema = Joi.object({
+  keyword: Joi.string().trim().required(),
+});
+
 const createCourse = async (req, res) => {
   console.log(req.body);
   console.log(req.files);
