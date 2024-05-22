@@ -8,7 +8,6 @@ const contentSchema = new mongoose.Schema(
     },
     file: {
       type: String,
-      required: [true, "Please add a file URL for the content"],
     },
     course: {
       type: mongoose.Schema.Types.ObjectId,

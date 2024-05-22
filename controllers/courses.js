@@ -14,7 +14,7 @@ const courseSchema = Joi.object({
     .items(
       Joi.object({
         title: Joi.string().required(),
-        file: Joi.alternatives().try(Joi.string(), Joi.object()),
+        file: Joi.any().required(),
       })
     )
     .required(),
@@ -25,7 +25,7 @@ const createCourse = async (req, res) => {
   console.log(req.files);
 
   try {
-    // Make sure user is an admin
+    // Ensure user is an admin
     if (req.user.role !== "admin" && req.user.role !== "super admin") {
       return res.status(401).json({
         success: false,
@@ -33,48 +33,51 @@ const createCourse = async (req, res) => {
       });
     }
 
+    // Get content data from req.body
+    let { title, description, price, category, content } = req.body;
+
+    // Parse content if it is a string
+    if (typeof content === "string") {
+      content = JSON.parse(content);
+    }
+
+    // Ensure content is an array
+    if (!Array.isArray(content)) {
+      return res.status(400).json({ error: '"content" must be an array' });
+    }
+
     // Validate request body
-    const { error } = courseSchema.validate(req.body);
+    const { error } = courseSchema.validate({
+      title,
+      description,
+      price,
+      category,
+      content,
+    });
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { title, description, price, category, thumbnail, content } =
-      req.body;
-
-    // Handle thumbnail upload or URL
+    // Handle thumbnail upload
     let thumbnailUrl;
-    if (thumbnail.startsWith("http")) {
-      // If thumbnail is provided as an HTTP link
-      thumbnailUrl = thumbnail; // No need to upload, use the URL directly
-    } else if (req.files && req.files.thumbnail) {
-      // If thumbnail is uploaded as a file
+    if (req.files && req.files.thumbnail) {
       thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
     } else {
-      return res
-        .status(400)
-        .json({ error: "Thumbnail file or URL not provided" });
+      return res.status(400).json({ error: "Thumbnail file not provided" });
     }
 
-    // Handle content uploads or URLs
+    // Handle content uploads
     const uploadedContent = await Promise.all(
-      content.map(async (item) => {
-        let fileUrl;
-        if (!item.file) {
+      content.map(async (item, index) => {
+        const fileKey = `content[${index}].file`;
+        if (!req.files || !req.files[fileKey]) {
           throw new Error(`File not provided for ${item.title}`);
         }
-        if (item.file.startsWith("http")) {
-          // If file is provided as an HTTP link
-          fileUrl = item.file;
-        } else if (req.files && req.files[item.file]) {
-          // If file is uploaded
-          fileUrl = await uploadVideo(req.files[item.file].tempFilePath);
-        } else {
-          throw new Error(`File not provided for ${item.title}`);
-        }
+        const fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
         return { title: item.title, file: fileUrl };
       })
     );
+  
 
     // Set status to "published" by default
     const newCourse = await CourseModel.create({
@@ -99,8 +102,9 @@ const createCourse = async (req, res) => {
       .status(201)
       .json({ message: "Course created successfully", data: newCourse });
   } catch (error) {
-    console.error("Error creating course with content:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error creating course with content:", error.message);
+    console.error(error.stack);
+    return res.status(500).json({ error: error.message });
   }
 };
 
