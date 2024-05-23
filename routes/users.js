@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, getUser, deleteUser } = require("../controllers/user");
+const { getUsers, getUser, deleteUser, getUserWithPurchasedCourse } = require("../controllers/user");
 const User = require("../models/User");
 const advancedResult = require("../middleware/advancedResult");
 const { protect, authorize } = require("../middleware/auth");
@@ -16,5 +16,10 @@ router
   .route("/:id")
   .get(protect, authorize("admin", "super admin"), getUser)
   .delete(protect, authorize("admin", "user", "super admin"), deleteUser);
+
+  router 
+    .route('/:id/course')
+      .get(protect, getUserWithPurchasedCourse)
+    
 
 module.exports = router;

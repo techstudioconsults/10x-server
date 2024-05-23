@@ -39,7 +39,7 @@ const verifyWebhookEvent = asyncHandler(async (req, res) => {
         console.log(course);
         if (course) {
           // Associate the course with the user
-          await user.courses.push(course._id);
+          await user.purchasedCourses.push(course._id);
           await user.save();
         }
       }
@@ -89,7 +89,7 @@ const verifyWebhookEvent = asyncHandler(async (req, res) => {
         const course = await CourseModel.findById(payment.courseId);
         if (course) {
           // Associate the course with the user
-          await user.courses.push(course._id);
+          await user.purchasedCourses.push(course._id);
           await user.save();
         }
       }

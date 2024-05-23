@@ -34,7 +34,7 @@ const UserSchema = mongoose.Schema({
       minlength: 6,
       select: false,
     },
-    courses:[
+    purchasedCourses:[
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
