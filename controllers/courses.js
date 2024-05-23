@@ -81,7 +81,6 @@ const createCourse = async (req, res) => {
         return { title: item.title, file: fileUrl };
       })
     );
-  
 
     // Set status to "published" by default
     const newCourse = await CourseModel.create({
@@ -116,86 +115,91 @@ const createCourse = async (req, res) => {
 const editCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
-    // Make sure user is an admin
+    // Ensure user is an admin
     if (req.user.role !== "admin" && req.user.role !== "super admin") {
       return res.status(401).json({
         success: false,
-        message: `User ${req.user.id} is not authorized to add course`,
+        message: `User ${req.user.id} is not authorized to edit course`,
       });
     }
-    const { error } = courseSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
+
+    // Get course data from req.body
+    let { title, description, price, category, content } = req.body;
+
+    // Parse content if it is a string
+    if (typeof content === "string") {
+      content = JSON.parse(content);
     }
 
-    const course = await CourseModel.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ error: "Course not found" });
+    // Ensure content is an array
+    if (!Array.isArray(content)) {
+      return res.status(400).json({ error: '"content" must be an array' });
     }
 
-    const {
+    // Validate request body
+    const { error } = courseSchema.validate({
       title,
       description,
       price,
       category,
-      thumbnail,
       content,
-      status, // Include status in the request body
-    } = req.body;
-
-    let thumbnailUrl = course.thumbnail;
-    if (thumbnail && thumbnail.startsWith("http")) {
-      thumbnailUrl = await uploadImage(thumbnail);
-    } else if (
-      req.files &&
-      req.files.thumbnail &&
-      req.files.thumbnail.tempFilePath
-    ) {
-      thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
+    });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
+    // Handle thumbnail upload
+    let thumbnailUrl;
+    if (req.files && req.files.thumbnail) {
+      thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
+    } else {
+      // Keep the existing thumbnail if none was provided
+      const course = await CourseModel.findById(courseId);
+      thumbnailUrl = course.thumbnail;
+    }
+
+    // Handle content uploads
     const uploadedContent = await Promise.all(
-      content.map(async (item) => {
-        let fileUrl;
-        if (!item.file) {
+      content.map(async (item, index) => {
+        const fileKey = `content[${index}].file`;
+        if (!req.files || !req.files[fileKey]) {
           throw new Error(`File not provided for ${item.title}`);
         }
-        if (item.file.startsWith("http")) {
-          // If file is provided as an HTTP link
-          fileUrl = item.file;
-        } else if (req.files && req.files[item.file]) {
-          // If file is uploaded
-          fileUrl = await uploadVideo(req.files[item.file].tempFilePath);
-        } else {
-          throw new Error(`File not provided for ${item.title}`);
-        }
+        const fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
         return { title: item.title, file: fileUrl };
       })
     );
 
+    // Update the course
+    const updatedCourse = await CourseModel.findByIdAndUpdate(
+      courseId,
+      {
+        title,
+        description,
+        price,
+        category,
+        thumbnail: thumbnailUrl,
+      },
+      { new: true }
+    );
+
+    // Delete existing content and create new content
     await ContentModel.deleteMany({ course: courseId });
     const createdContent = await ContentModel.create(
       uploadedContent.map((item) => ({ ...item, course: courseId }))
     );
 
-    // Update status if provided in the request
-    if (status && status !== course.status) {
-      course.status = status;
-    }
+    // Update the course with the new content
+    updatedCourse.content = createdContent.map((content) => content._id);
+    await updatedCourse.save();
 
-    course.title = title || course.title;
-    course.description = description || course.description;
-    course.price = price || course.price;
-    course.category = category || course.category;
-    course.thumbnail = thumbnailUrl;
-
-    course.content = createdContent.map((content) => content._id);
-    await course.save();
-
-    return res.json({ message: "Course updated successfully", data: course });
+    return res
+      .status(200)
+      .json({ message: "Course updated successfully", data: updatedCourse });
   } catch (error) {
-    console.error("Error editing course:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error editing course with content:", error.message);
+    console.error(error.stack);
+    return res.status(500).json({ error: error.message });
   }
 };
 
