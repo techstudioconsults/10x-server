@@ -1,52 +1,53 @@
-const crypto = require("crypto");
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
 const UserSchema = mongoose.Schema({
-    fullname: {
-        type: String,
-        required: [true, "Please add a fullname"],
-        maxlength: [50, 'Name cannot be more than 50 characters']
-    },
-    email: {
-      type: String,
-      required: [true, "Please provide an email"],
-      unique: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        "Please add a valid email",
-      ],
-    },
-    role: {
-      type: String,
-      enum: ["user", "admin", "super admin"],
-      default: "user",
-    },
-    photo: {
-      type: String,
-      required: false,
-      default: 'no-photo.jpg'
+  fullname: {
+    type: String,
+    required: [true, "Please add a fullname"],
+    maxlength: [50, "Name cannot be more than 50 characters"],
   },
-    password: {
-      type: String,
-      required: [true, "Please add a password"],
-      minlength: 6,
-      select: false,
-    },
-    purchasedCourses:[
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course'
-      },
+  email: {
+    type: String,
+    required: [true, "Please provide an email"],
+    unique: true,
+    match: [
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      "Please add a valid email",
     ],
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
   },
-  {
-    timestamps: true,
-  }
-);
+  role: {
+    type: String,
+    enum: ["user", "admin", "super admin"],
+    default: "user",
+  },
+  photo: {
+    type: String,
+    required: false,
+    default: "no-photo.jpg",
+  },
+  password: {
+    type: String,
+    required: [true, "Please add a password"],
+    minlength: 6,
+    select: false,
+  },
+  purchasedCourses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
+  wishList: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+}, {
+  timestamps: true,
+});
 
 // Encrypt password using bcrypt
 UserSchema.pre("save", async function (next) {
@@ -92,4 +93,4 @@ UserSchema.methods.getResetPasswordToken = function () {
   }
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema);

@@ -1,19 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
+const { addToWishList, removeFromWishList, getWishListCourses } = require('../controllers/wishList');
 
-const {
-  getWishListItems,
-  addItemToWishList,
-  removeItemFromWishList,
-} = require("../controllers/wishList");
-
-const methodNotAllowed = require("../utils/methodNotAllowed");
-
-router.route("/").get(getWishListItems).all(methodNotAllowed);
-router.route("/add/:id").post(addItemToWishList).all(methodNotAllowed);
-router
-  .route("/remove/:id")
-  .delete(removeItemFromWishList)
-  .all(methodNotAllowed);
+router.post('/wishlist/add/:courseId', protect, addToWishList);
+router.delete('/wishlist/remove/:courseId', protect, removeFromWishList);
+router.get('/wishlist', protect, getWishListCourses);
 
 module.exports = router;
