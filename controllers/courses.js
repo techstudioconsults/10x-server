@@ -111,7 +111,6 @@ const createCourse = async (req, res) => {
   }
 };
 
-// Controller function for editing a course
 const editCourse = async (req, res) => {
   const courseId = req.params.id;
   try {
@@ -148,24 +147,23 @@ const editCourse = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
+    // Fetch the existing course
+    const course = await CourseModel.findById(courseId);
+
     // Handle thumbnail upload
-    let thumbnailUrl;
+    let thumbnailUrl = course.thumbnail;
     if (req.files && req.files.thumbnail) {
       thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
-    } else {
-      // Keep the existing thumbnail if none was provided
-      const course = await CourseModel.findById(courseId);
-      thumbnailUrl = course.thumbnail;
     }
 
     // Handle content uploads
     const uploadedContent = await Promise.all(
       content.map(async (item, index) => {
         const fileKey = `content[${index}].file`;
-        if (!req.files || !req.files[fileKey]) {
-          throw new Error(`File not provided for ${item.title}`);
+        let fileUrl = course.content[index]?.file; // Use the existing file URL if no new file is provided
+        if (req.files && req.files[fileKey]) {
+          fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
         }
-        const fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
         return { title: item.title, file: fileUrl };
       })
     );
