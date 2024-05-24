@@ -1,22 +1,24 @@
-const User = require('../models/User');
+const User = require("../models/User");
 
 // @desc    Add course to wish list
-// @route   POST /api/users/wishlist/add/:courseId
+// @route   POST /api/v1/wishlist/add/:courseId
 // @access  Private
 exports.addToWishList = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
     if (user.wishList.includes(req.params.courseId)) {
-      return res.status(400).json({ success: false, error: 'Course already in wish list' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Course already in wish list" });
     }
 
     user.wishList.push(req.params.courseId);
     await user.save();
-    
+
     res.status(200).json({ success: true, data: user.wishList });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -24,22 +26,24 @@ exports.addToWishList = async (req, res, next) => {
 };
 
 // @desc    Remove course from wish list
-// @route   DELETE /api/users/wishlist/remove/:courseId
+// @route   DELETE /api/v1/wishlist/remove/:courseId
 // @access  Private
 exports.removeFromWishList = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
     if (!user.wishList.includes(req.params.courseId)) {
-      return res.status(400).json({ success: false, error: 'Course not in wish list' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Course not in wish list" });
     }
 
     user.wishList.pull(req.params.courseId);
     await user.save();
-    
+
     res.status(200).json({ success: true, data: user.wishList });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -47,7 +51,7 @@ exports.removeFromWishList = async (req, res, next) => {
 };
 
 // @desc    Get all courses in wish list
-// @route   GET /api/users/wishlist
+// @route   GET /api/v1/wishlist
 // @access  Private
 exports.getWishListCourses = async (req, res, next) => {
   try {
@@ -55,7 +59,7 @@ exports.getWishListCourses = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    
+
     res.status(200).json({ success: true, data: user.wishList });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

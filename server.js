@@ -56,11 +56,13 @@ const courses = require("./routes/course");
 const draftedCourses = require("./routes/draftedCourse");
 const payment = require("./routes/payment");
 const subscribe = require("./routes/subscribe");
+const wishList = require("./routes/wishList");
 
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
 app.use("/api/v1/draftedCourse", draftedCourses);
+app.use("/api/v1/wishlist", wishList); // Wishlist route
 app.use("/api/v1/payment", payment);
 app.use("/api/v1/subscribe", subscribe);
 

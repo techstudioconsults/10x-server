@@ -1,18 +1,6 @@
 const mongoose = require("mongoose");
 
 
-// Define Bookmark Schema
-const wishListSchema = new mongoose.Schema(
-  {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    course: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
-  },
-  { timestamps: true }
-);
-
-const WishListModel = mongoose.model("WishList", wishListSchema);
-
-
 // Define Course Schema
 const courseSchema = new mongoose.Schema(
   {
@@ -45,11 +33,10 @@ const courseSchema = new mongoose.Schema(
       default: "published",
     },
     content: [{ type: mongoose.Schema.Types.ObjectId, ref: "Content" }],
-    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bookmark" }],
   },
   { timestamps: true }
 );
 
 const CourseModel = mongoose.model("Course", courseSchema);
 
-module.exports = { CourseModel, WishListModel };
+module.exports = { CourseModel };
