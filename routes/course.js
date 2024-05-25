@@ -28,6 +28,14 @@ router.delete(
   courseController.deleteCourse
 );
 
+// Route for getting top 4 best-selling courses
+router.get(
+  "/top-selling",
+  protect,
+  authorize("admin", "super admin"),
+  courseController.getTopSellingCourses
+);
+
 // Route for getting all courses
 router.get("/recentCourse", courseController.getRecentlyUploadedCourses);
 

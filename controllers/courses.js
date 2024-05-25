@@ -1,5 +1,7 @@
 const { CourseModel } = require("../models/Course");
 const { ContentModel } = require("../models/Content");
+const Payment = require("../models/Payment");
+const asyncHandler = require("../middleware/async");
 const Joi = require("joi");
 const uploadImage = require("../utils/uploadImage");
 const uploadVideo = require("../utils/uploadVideo");
@@ -127,7 +129,9 @@ const editCourse = async (req, res) => {
 
     // Ensure the course exists
     if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
 
     // Update only the fields that are provided
@@ -171,16 +175,17 @@ const editCourse = async (req, res) => {
       await ContentModel.create(createdContent);
     }
 
-    return res
-      .status(200)
-      .json({success: true, message: "Course updated successfully", data: updatedCourse });
+    return res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: updatedCourse,
+    });
   } catch (error) {
     console.error("Error editing course:", error.message);
     console.error(error.stack);
     return res.status(500).json({ error: error.message });
   }
 };
-
 
 // Controller function for deleting a course (and its content)
 const deleteCourse = async (req, res) => {
@@ -201,13 +206,15 @@ const deleteCourse = async (req, res) => {
     await ContentModel.deleteMany({ course: courseId });
     await CourseModel.findByIdAndDelete(courseId);
 
-    return res.json({ success: true, message: "Course and its content deleted successfully" });
+    return res.json({
+      success: true,
+      message: "Course and its content deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting course:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 // Controller function for getting all courses
 const getAllCourses = async (req, res) => {
@@ -283,6 +290,43 @@ const getRecentlyUploadedCourses = async (req, res) => {
   }
 };
 
+const getTopSellingCourses = asyncHandler(async (req, res, next) => {
+  try {
+    const bestSellingCourses = await Payment.aggregate([
+      { $match: { status: "success" } }, // Match only successful payments
+      { $group: { _id: "$courseId", count: { $sum: 1 } } }, // Group by courseId and count payments
+      { $sort: { count: -1 } }, // Sort by count in descending order
+      { $limit: 4 }, // Limit to top 4 courses
+      {
+        $lookup: {
+          from: "courses",
+          localField: "_id",
+          foreignField: "_id",
+          as: "course",
+        },
+      },
+      { $unwind: "$course" }, // Unwind the course array
+      {
+        $project: {
+          "course.title": 1,
+          "course.description": 1,
+          "course.price": 1,
+          "course.category": 1,
+          "course.thumbnail": 1,
+          count: 1,
+        },
+      }, // Project only necessary fields
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: bestSellingCourses,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = {
   createCourse,
   editCourse,
@@ -291,4 +335,5 @@ module.exports = {
   getAllCourses,
   getCourseById,
   getRecentlyUploadedCourses,
+  getTopSellingCourses,
 };
