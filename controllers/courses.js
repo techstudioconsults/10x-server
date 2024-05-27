@@ -219,7 +219,10 @@ const deleteCourse = async (req, res) => {
 // Controller function for getting all courses
 const getAllCourses = async (req, res) => {
   try {
-    const courses = await CourseModel.find({ status: "published" });
+    // Sorting the courses in descending order by creation date (newest first)
+    const courses = await CourseModel.find({ status: "published" }).sort({
+      createdAt: -1,
+    });
     return res.json({ data: courses });
   } catch (error) {
     console.error("Error getting all courses:", error);
