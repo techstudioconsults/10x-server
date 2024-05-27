@@ -1,3 +1,8 @@
+/**
+ *  @author @AduragbemiShobowale Aduragbemi Shobowale
+ *  @version 1.0
+ */
+
 const { CourseModel } = require("../models/Course");
 const { ContentModel } = require("../models/Content");
 const Payment = require("../models/Payment");

@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const handlebars = require('handlebars');

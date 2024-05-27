@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 const express = require('express');
 const { register, login, getMe, forgotPassword, resetPassword, updateDetails, updatePassword, logout } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');

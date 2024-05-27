@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 const axios = require('axios');
 const crypto = require('crypto');
 const ErrorResponse = require('../utils/errorResponse');

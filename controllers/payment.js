@@ -1,3 +1,7 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
 const User = require("../models/User");
 const PaymentDetails = require("../models/Payment");
 const asyncHandler = require("../middleware/async");

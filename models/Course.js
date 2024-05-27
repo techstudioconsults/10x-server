@@ -1,5 +1,9 @@
-const mongoose = require("mongoose");
+/**
+ *  @author @AduragbemiShobowale Aduragbemi Shobowale
+ *  @version 1.0
+ */
 
+const mongoose = require("mongoose");
 
 // Define Course Schema
 const courseSchema = new mongoose.Schema(

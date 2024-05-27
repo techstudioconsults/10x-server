@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res, paymentData) => {
     // create token

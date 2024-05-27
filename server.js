@@ -1,3 +1,9 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
+
 const express = require("express");
 const dotenv = require("dotenv");
 const errorHandler = require("./middleware/error");

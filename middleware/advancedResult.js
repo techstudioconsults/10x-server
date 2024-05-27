@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 const advancedResult = (model, populate) => async (req, res, next) => {
     let query;
     

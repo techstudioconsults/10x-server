@@ -1,3 +1,8 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+
 const express = require("express");
 const { getUsers, getUser, deleteUser, getUserWithPurchasedCourse } = require("../controllers/user");
 const User = require("../models/User");
