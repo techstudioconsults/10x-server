@@ -1,8 +1,3 @@
-/**
- *  @author @AduragbemiShobowale Aduragbemi Shobowale
- *  @version 1.0
- */
-
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');

@@ -1,8 +1,3 @@
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- */
-
 const express = require('express');
 const { initializePayment, verifyPaymentRef } = require('../services/paystack');
 const whitelistIP = require('../middleware/whitelist');

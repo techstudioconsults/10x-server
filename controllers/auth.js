@@ -1,8 +1,3 @@
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- */
-
 const ErrorResponse = require("../utils/errorResponse");
 const User = require("../models/User");
 const asyncHandler = require("../middleware/async");

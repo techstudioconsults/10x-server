@@ -1,8 +1,3 @@
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- */
-
 const express = require('express');
 const { createSubcribers, unsubscribe, sendMailToSubscribers } = require('../controllers/subscribe');
  const advancedResult = require('../middleware/advancedResult');

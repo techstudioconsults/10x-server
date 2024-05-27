@@ -1,8 +1,3 @@
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- */
-
 const crypto = require('crypto');
 
 // Verify header signature from paystack

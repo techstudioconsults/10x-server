@@ -1,8 +1,3 @@
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- */
-
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({

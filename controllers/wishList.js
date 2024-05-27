@@ -1,8 +1,3 @@
-/**
- *  @author @AduragbemiShobowale Aduragbemi Shobowale
- *  @version 1.0
- */
-
 const User = require("../models/User");
 
 // @desc    Add course to wish list

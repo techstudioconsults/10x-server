@@ -1,7 +1,3 @@
-/**
- *  @author @AduragbemiShobowale Aduragbemi Shobowale
- *  @version 1.0
- */
 const { DraftedCourseModel } = require("../models/draftedCourse");
 const { ContentModel } = require("../models/Content");
 const Joi = require("joi");

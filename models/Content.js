@@ -1,8 +1,3 @@
-/**
- *  @author @AduragbemiShobowale Aduragbemi Shobowale
- *  @version 1.0
- */
-
 const mongoose = require("mongoose");
 
 const contentSchema = new mongoose.Schema(
