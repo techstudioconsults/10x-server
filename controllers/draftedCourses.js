@@ -123,81 +123,64 @@ const editDraftedCourse = async (req, res) => {
       });
     }
 
-    // Get course data from req.body
-    let { title, description, price, category, content } = req.body;
+    // Fetch the existing course
+    const course = await DraftedCourseModel.findById(courseId);
 
-    // Parse content if it is a string
-    if (typeof content === "string") {
-      content = JSON.parse(content);
+    // Ensure the course exists
+    if (!course) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
 
-    // Ensure content is an array
-    if (!Array.isArray(content)) {
-      return res.status(400).json({ error: '"content" must be an array' });
-    }
+    // Update only the fields that are provided
+    let updatedFields = {};
+    if (req.body.title) updatedFields.title = req.body.title;
+    if (req.body.description) updatedFields.description = req.body.description;
+    if (req.body.price) updatedFields.price = req.body.price;
+    if (req.body.category) updatedFields.category = req.body.category;
 
-    // Validate request body
-    const { error } = courseSchema.validate({
-      title,
-      description,
-      price,
-      category,
-      content,
-    });
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    // Handle thumbnail upload
-    let thumbnailUrl;
+    // Handle thumbnail upload if provided
+    let thumbnailUrl = course.thumbnail;
     if (req.files && req.files.thumbnail) {
       thumbnailUrl = await uploadImage(req.files.thumbnail.tempFilePath);
-    } else {
-      // Keep the existing thumbnail if none was provided
-      const course = await DraftedCourseModel.findById(courseId);
-      thumbnailUrl = course.thumbnail;
+      updatedFields.thumbnail = thumbnailUrl;
     }
 
-    // Handle content uploads
-    const uploadedContent = await Promise.all(
-      content.map(async (item, index) => {
-        const fileKey = `content[${index}].file`;
-        if (!req.files || !req.files[fileKey]) {
-          throw new Error(`File not provided for ${item.title}`);
-        }
-        const fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
-        return { title: item.title, file: fileUrl };
-      })
-    );
-
     // Update the course
-    const updatedCourse = await DraftedCourseModel.findByIdAndUpdate(
+    const updatedCourse = await CourseModel.findByIdAndUpdate(
       courseId,
-      {
-        title,
-        description,
-        price,
-        category,
-        thumbnail: thumbnailUrl,
-      },
+      updatedFields,
       { new: true }
     );
 
-    // Delete existing content and create new content
-    await ContentModel.deleteMany({ course: courseId });
-    const createdContent = await ContentModel.create(
-      uploadedContent.map((item) => ({ ...item, course: courseId }))
-    );
+    // If content is provided, handle content uploads
+    let createdContent = [];
+    if (req.body.content) {
+      const content = JSON.parse(req.body.content);
+      createdContent = await Promise.all(
+        content.map(async (item, index) => {
+          const fileKey = `content[${index}].file`;
+          let fileUrl = course.content[index]?.file; // Use the existing file URL if no new file is provided
+          if (req.files && req.files[fileKey]) {
+            fileUrl = await uploadVideo(req.files[fileKey].tempFilePath);
+          }
+          return { title: item.title, file: fileUrl, course: courseId };
+        })
+      );
 
-    // Update the course with the new content
-    updatedCourse.content = createdContent.map((content) => content._id);
-    await updatedCourse.save();
+      // Delete existing content and create new content
+      await ContentModel.deleteMany({ course: courseId });
+      await ContentModel.create(createdContent);
+    }
 
-    return res
-      .status(200)
-      .json({ message: "Course updated successfully", data: updatedCourse });
+    return res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: updatedCourse,
+    });
   } catch (error) {
-    console.error("Error editing course with content:", error.message);
+    console.error("Error editing course:", error.message);
     console.error(error.stack);
     return res.status(500).json({ error: error.message });
   }
@@ -232,7 +215,10 @@ const deleteDraftedCourse = async (req, res) => {
 // Controller function for getting all courses
 const getAllDraftedCourses = async (req, res) => {
   try {
-    const courses = await DraftedCourseModel.find({ status: "draft" });
+    // Sorting the courses in descending order by creation date (newest first)
+    const courses = await CourseModel.find({ status: "draft" }).sort({
+      createdAt: -1,
+    });
     return res.json({ data: courses });
   } catch (error) {
     console.error("Error getting all courses:", error);
