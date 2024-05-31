@@ -1,68 +1,69 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const Subscriber = require('../models/Subscribers');
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
+const ErrorResponse = require("../utils/errorResponse");
+const asyncHandler = require("../middleware/async");
+const Subscriber = require("../models/Subscribers");
 // const sendEmail = require('../utils/sendEmail');
-const {mailSubscription} = require('../utils/mailing');
-
+const { mailSubscription, mailFreeAccess } = require("../utils/mailing");
 
 //@desc     create subscribers
 // @route   POST /api/v1/subscribe
 // @access  Public
-const createSubcribers = asyncHandler(async(req, res, next) => {
-    const { email } = req.body ;
+const createSubcribers = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  // Validate Email Address
+  if (!email) {
+    return res.status(400).json({ error: "Email address is required" });
+  }
+
+  // Check if email address already exist
+  const existingSubscription = await Subscriber.findOne({ email });
+  if (existingSubscription) {
+    return res
+      .status(400)
+      .json({ error: "Email address is already subscribed" });
+  }
+
+  // Create a new subscriber
+  const newSubscriber = await Subscriber.create({ email });
+
+  // Prepare email template data
+  const templateData = {
+    email: req.body.email,
+  };
+
+  await mailSubscription({ email: templateData.email });
+
+  return res
+    .status(201)
+    .json({ message: "Subscription successful", newSubscriber });
+});
+
+const unsubscribe = asyncHandler(async (req, res, next) => {
+  try {
+    const { email } = req.body;
 
     // Validate Email Address
-    if(!email){
-        return res.status(400).json({ error: 'Email address is required'});
+    if (!email) {
+      return res.status(400).json({ error: "Email address is required" });
     }
 
-    // Check if email address already exist
-    const existingSubscription = await Subscriber.findOne({email});
-    if(existingSubscription){
-        return res.status(400).json({error: 'Email address is already subscribed'});;
+    // check if email exist
+    const subscriberExist = await Subscriber.findOne({ email });
+    if (!subscriberExist) {
+      return res.status(400).json({ message: "subscriber does not exist" });
     }
 
-    // Create a new subscriber
-    const newSubscriber = await Subscriber.create({email});
-
-       // Prepare email template data
-       const templateData = {
-        email : req.body.email
-      };
-
-
-   await mailSubscription({  email: templateData.email });
-
-   
-    return res.status(201).json({message: 'Subscription successful', newSubscriber });
+    // if email exist
+    await Subscriber.deleteOne({ email });
+    res.status(200).json({ message: "Unsubscribed Successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error });
+  }
 });
-
-
-const unsubscribe = asyncHandler(async(req, res, next) => {
-    try {
-     const {email} = req.body;  
-
-     // Validate Email Address
-     if(!email){
-         return res.status(400).json({ error: 'Email address is required'});
-     }
-
-
-     // check if email exist
-      const subscriberExist = await Subscriber.findOne({email});
-     if(!subscriberExist){
-        return res.status(400).json({message: 'subscriber does not exist'});
-     }
-
-      // if email exist
-    await Subscriber.deleteOne({email});
-    res.status(200).json({message: 'Unsubscribed Successfully'});
-    } catch (error) {
-        res.status(400).json({message: error});
-    }
-
-});
-
 
 const sendMailToSubscribers = asyncHandler(async (req, res, next) => {
   try {
@@ -83,13 +84,46 @@ const sendMailToSubscribers = asyncHandler(async (req, res, next) => {
     // Wait for all emails to be sent
     await Promise.all(subscribers);
 
-    res.status(200).json({ message: 'Emails sent successfully' });
+    res.status(200).json({ message: "Emails sent successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
+const sendEmailToUser = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
 
+  // Validate Email Address
+  if (!email) {
+    return res.status(400).json({ error: "Email address is required" });
+  }
 
+  // Check if email address already exist
+  const existingSubscription = await Subscriber.findOne({ email });
+  if (existingSubscription) {
+    return res
+      .status(400)
+      .json({ error: "Email address is already subscribed" });
+  }
 
-module.exports = { createSubcribers, unsubscribe, sendMailToSubscribers };
+  // Create a new subscriber
+  const newSubscriber = await Subscriber.create({ email });
+
+  // Prepare email template data
+  const templateData = {
+    email: req.body.email,
+  };
+
+  await mailFreeAccess({ email: templateData.email });
+
+  return res
+    .status(201)
+    .json({ message: "Subscription successful", newSubscriber });
+});
+
+module.exports = {
+  createSubcribers,
+  unsubscribe,
+  sendMailToSubscribers,
+  sendEmailToUser,
+};

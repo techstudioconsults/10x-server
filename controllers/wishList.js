@@ -1,81 +1,71 @@
-const { CourseModel, WishListModel } = require("../models/Course");
+/**
+ *  @author @AduragbemiShobowale  Aduragbemi Shobowale
+ *  @version 1.0
+ */
+const User = require("../models/User");
 
-// GET ALL WISHLIST ITEMS
-const getWishListItems = async (req, res, next) => {
+// @desc    Add course to wish list
+// @route   POST /api/v1/wishlist/add/:courseId
+// @access  Private
+exports.addToWishList = async (req, res, next) => {
   try {
-    const userId = req.user._id;
-    const wishListItems = await WishListModel.find({ user: userId }).populate(
-      "course"
-    );
-    const wishedCourses = wishListItems.map((item) => item.course);
-    res.status(200).json({ message: "success", data: wishedCourses });
-  } catch (error) {
-    next(error); // Pass error to error handling middleware
-  }
-};
-
-// ADD ITEM TO WISHLIST
-const addItemToWishList = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const { courseId } = req.params;
-
-    // Check if the course exists
-    const course = await CourseModel.findById(courseId);
-    if (!course) {
-      return res
-        .status(404)
-        .json({ message: "No Course With The Provided ID" });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    // Check if the item is already in the wishlist
-    const existingItem = await WishListModel.findOne({
-      user: userId,
-      course: courseId,
-    });
-    if (existingItem) {
+    if (user.wishList.includes(req.params.courseId)) {
       return res
         .status(400)
-        .json({ message: "Item already exists in the wishlist" });
+        .json({ success: false, error: "Course already in wish list" });
     }
 
-    // Create a new wishlist item
-    const wishListItem = new WishListModel({ user: userId, course: courseId });
-    await wishListItem.save();
+    user.wishList.push(req.params.courseId);
+    await user.save();
 
-    res.status(201).json({ message: "Item added to wishlist successfully" });
-  } catch (error) {
-    next(error); // Pass error to error handling middleware
+    res.status(200).json({ success: true, data: user.wishList });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
-// REMOVE ITEM FROM WISHLIST
-const removeItemFromWishList = async (req, res, next) => {
+// @desc    Remove course from wish list
+// @route   DELETE /api/v1/wishlist/remove/:courseId
+// @access  Private
+exports.removeFromWishList = async (req, res, next) => {
   try {
-    const userId = req.user._id;
-    const { courseId } = req.params;
-
-    // Check if the course exists
-    const course = await CourseModel.findById(courseId);
-    if (!course) {
-      return res
-        .status(404)
-        .json({ message: "No Course With The Provided ID" });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    // Find and delete the wishlist item
-    await WishListModel.findOneAndDelete({ user: userId, course: courseId });
+    if (!user.wishList.includes(req.params.courseId)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Course not in wish list" });
+    }
 
-    res
-      .status(200)
-      .json({ message: "Item removed from wishlist successfully" });
-  } catch (error) {
-    next(error); // Pass error to error handling middleware
+    user.wishList.pull(req.params.courseId);
+    await user.save();
+
+    res.status(200).json({ success: true, data: user.wishList });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
-module.exports = {
-  getWishListItems,
-  addItemToWishList,
-  removeItemFromWishList,
+// @desc    Get all courses in wish list
+// @route   GET /api/v1/wishlist
+// @access  Private
+exports.getWishListCourses = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).populate("wishList");
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    res.status(200).json({ success: true, data: user.wishList });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 };

@@ -1,3 +1,7 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
 const express = require("express");
 const dotenv = require("dotenv");
 const errorHandler = require("./middleware/error");
@@ -5,6 +9,10 @@ const connectDB = require("./config/db");
 const morgan = require("morgan");
 const colors = require("colors");
 const cookieParser = require("cookie-parser");
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
 const fileUpload = require("express-fileupload");
 const cors = require("cors");
 const session = require("express-session");
@@ -25,24 +33,37 @@ app.use(
     saveUninitialized: true,
   })
 );
+ 
+app.set("trust proxy", false);
 
-app.set("trust proxy", true);
+// Middleware setup
+app.use(express.json()); // Body parser
+app.use(cors()); // CORS setup
+app.use(cookieParser()); // Cookie parser
 
-const auth = require("./routes/auth");
-const users = require("./routes/users");
-const courses = require("./routes/course");
-const draftedCourses = require("./routes/draftedCourse");
-const wishList = require("./routes/wishList");
-const payment = require("./routes/payment");
-const subscribe = require("./routes/subscribe");
+// Dev logging middleware
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 
-//Body parser
-app.use(express.json());
+// Sanitize data
+app.use(mongoSanitize());
 
-//cors setup
-app.use(cors());
+// set security headers
+ app.use(helmet());
 
-// file upload
+ // Rate limiting
+ const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, //10mins
+  max: 100
+ });
+
+ app.use(limiter);
+
+ // Prevent http param pollution
+ app.use(hpp());
+
+// File upload middleware
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -50,22 +71,23 @@ app.use(
   })
 );
 
-//Cookie parser
-app.use(cookieParser());
-
-// Dev logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
+// Error handler middleware
 app.use(errorHandler);
 
 // Mount routers
+const auth = require("./routes/auth");
+const users = require("./routes/users"); // User routes now include wishlist functionality
+const courses = require("./routes/course");
+const draftedCourses = require("./routes/draftedCourse");
+const payment = require("./routes/payment");
+const subscribe = require("./routes/subscribe");
+const wishList = require("./routes/wishList");
+
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
 app.use("/api/v1/course", courses);
 app.use("/api/v1/draftedCourse", draftedCourses);
-app.use("/api/v1/wish", wishList);
+app.use("/api/v1/wishlist", wishList); // Wishlist route
 app.use("/api/v1/payment", payment);
 app.use("/api/v1/subscribe", subscribe);
 

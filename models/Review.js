@@ -1,3 +1,7 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
 const mongoose = require("mongoose");
 
 const ReviewSchema = new mongoose.Schema(

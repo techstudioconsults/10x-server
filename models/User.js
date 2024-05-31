@@ -1,13 +1,18 @@
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ */
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const UserSchema = mongoose.Schema({
+const UserSchema = mongoose.Schema(
+  {
     fullname: {
-        type: String,
-        required: [true, "Please add a fullname"],
-        maxlength: [50, 'Name cannot be more than 50 characters']
+      type: String,
+      required: [true, "Please add a fullname"],
+      maxlength: [50, "Name cannot be more than 50 characters"],
     },
     email: {
       type: String,
@@ -26,22 +31,33 @@ const UserSchema = mongoose.Schema({
     photo: {
       type: String,
       required: false,
-      default: 'no-photo.jpg'
-  },
+      default: "no-photo.jpg",
+    },
     password: {
       type: String,
       required: [true, "Please add a password"],
       minlength: 6,
       select: false,
     },
-    courses:[
+    purchasedCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course'
+        ref: "Course",
       },
     ],
+    wishList: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
+    isNewUser: {
+      type: Boolean,
+      default: true,
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    lastPasswordReset: Date,
   },
   {
     timestamps: true,
@@ -92,4 +108,4 @@ UserSchema.methods.getResetPasswordToken = function () {
   }
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema);

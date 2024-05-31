@@ -1,3 +1,7 @@
+/**
+ *  @author @AduragbemiShobowale  Aduragbemi Shobowale
+ *  @version 1.0
+ */
 const mongoose = require("mongoose");
 
 // Define Drafted Course Schema
@@ -21,6 +25,10 @@ const draftCourseSchema = new mongoose.Schema(
       enum: ["video", "book"],
       required: [true, "Please add a category"],
     },
+    url: {
+      type: String,
+      required: [false, "Please add a valid URL"],
+    },
     thumbnail: {
       type: String,
       required: [true, "Add an image"],
@@ -28,9 +36,9 @@ const draftCourseSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "draft",
+      enum: ["drafted", "published"],
+      default: "drafted",
     },
-    content: [{ type: mongoose.Schema.Types.ObjectId, ref: "Content" }],
   },
   { timestamps: true }
 );

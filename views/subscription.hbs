@@ -1,29 +1,62 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body >
-    <div style=" display: grid; grid-template-column: 1fr; grid-gap:0.5rem; justify-content:center; align-items:center; width:100%; max-width:38rem;  margin:auto;">
-         <div style="display: grid; grid-template-column: 1fr; place-items:center; width:100%; max-width: 32rem; margin:auto;">
-           <button style="background-color: blue; padding: 0.7rem 1rem; text-align: center; width: 100%; margin: auto; border: none; color: #ffff; border-radius: 8px;"><img src="https://res.cloudinary.com/obacloud/image/upload/v1715955465/White_Logo_soaxrr.png" alt=""></button>
-     </div>
-     
-      <div style="display: grid;  grid-template-column: 1fr; background-color:#ffff color:black;">
-        <h1 style="text-align: center;">Thank you for subscribing to our newsletter</h1>
-      
-        <p style="text-align: center;">It’s official you made it to the list</p>
-      </div>
-       <div style="display: grid; grid-template-column: 1fr; justify-content:center; align-items:center; place-items:center; margin: auto; padding:1rem;">
-           <img src="https://res.cloudinary.com/obacloud/image/upload/v1715957243/Group_48095496_m2xygk.png" alt="">
-        </div>
-       <div style="display: grid; grid-template-column: 1fr 1fr; justify-content:space-between " >
-        <img src="https://res.cloudinary.com/obacloud/image/upload/v1715961719/fetti_3_ye9t0y.png" alt="">
-      <img src="https://res.cloudinary.com/obacloud/image/upload/v1715961698/fetti_2_qyvain.png" alt="">
-       </div>
-      
+{{!-- /** 
+ *  @author @AduragbemiShobowale  Aduragbemi Shobowale
+ *  @version 1.0
+ */ --}}
+<div
+  style="
+        margin: 0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f6f9fc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      "
+>
+  <div
+    style="
+          max-width: 540px;
+          width: 100%;
+          background-color: white;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          overflow: hidden;
+        "
+  >
+    <div
+      style="background-image: url('https://res.cloudinary.com/dgde8cwjk/image/upload/v1716889371/Frame_325_nvabsa.png'); padding: 20px"
+    >
+      <img
+        src="https://res.cloudinary.com/obacloud/image/upload/v1715955465/White_Logo_soaxrr.png"
+        alt=""
+      />
     </div>
-    
-</body>
-</html>
+
+    <div>
+      <h2 style="color: #333; font-size: 30px">
+        Thank you for subscribing to our newsletter
+      </h2>
+      <img
+        src="https://res.cloudinary.com/obacloud/image/upload/v1715957243/Group_48095496_m2xygk.png"
+        alt="Green Check"
+        style="width: 30%; margin: 20px 0"
+      />
+      <p style="color: #1e2c4f; font-size: 16px; margin: 20px 0">
+        It's official you made it to the list
+      </p>
+      <p style="color: #969bac; font-size: 16px">Share the love</p>
+      <div style="position: relative">
+        <img
+          src="https://res.cloudinary.com/obacloud/image/upload/v1715961719/fetti_3_ye9t0y.png"
+          alt="Confetti"
+          style="position: absolute; bottom: 20px; left: -10px; width: 40%"
+        />
+        <img
+          src="https://res.cloudinary.com/obacloud/image/upload/v1715961698/fetti_2_qyvain.png"
+          alt="Confetti"
+          style="position: absolute; bottom: 20px; right: -10px; width: 40%"
+        />
+      </div>
+    </div>
+  </div>
+</div>
